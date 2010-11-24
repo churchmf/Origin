@@ -8,7 +8,8 @@ HEADERS += originwindow.h \
     mainwindow.h
 SOURCES += main.cpp \
     mainwindow.cpp \
-    originwindow.cpp
+    originwindow.cpp \
+    inputhandler.cpp
 
 FORMS += \
     mainwindow.ui

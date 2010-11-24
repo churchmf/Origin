@@ -6,6 +6,13 @@ OriginWindow::OriginWindow(QWidget *parent) : QGLWidget(parent)
     // listen for key events
     setFocusPolicy(Qt::StrongFocus);
 
+    // enable mouse cursor tracking
+    setMouseTracking(true);
+
+    // grab cursor and mouse
+    const QCursor & cursor = QCursor();
+    grabMouse ( cursor );
+
     walkbias = 0;
     walkbiasangle = 0;
     lookupdown = 0;
@@ -84,108 +91,6 @@ void OriginWindow::paintGL()
         v_m = (*i).vertex[2].v;
         glTexCoord2f(u_m,v_m); glVertex3f(x_m,y_m,z_m);
         glEnd();
-    }
-}
-
-void OriginWindow::mousePressEvent(QMouseEvent *event)
-{
-
-}
-
-void OriginWindow::mouseMoveEvent(QMouseEvent *event)
-{
-
-}
-
-void OriginWindow::keyPressEvent( QKeyEvent *e )
-{
-    switch( e->key() )
-    {
-    case Qt::Key_B:
-        if (blend)
-        {
-            blend = false;
-            glDisable(GL_BLEND);
-            glEnable(GL_DEPTH_TEST);
-        }
-        else
-        {
-            blend = true;
-            glEnable(GL_BLEND);
-            glDisable(GL_DEPTH_TEST);
-        }
-
-        updateGL();
-        break;
-
-                case Qt::Key_F:
-        filter++;
-        if( filter > 2 )
-            filter = 0;
-
-        updateGL();
-        break;
-
-                case Qt::Key_Up:
-        xpos -= (float)sin(heading*piover180) * 0.05f;
-        zpos -= (float)cos(heading*piover180) * 0.05f;
-        if (walkbiasangle >= 359.0f)
-        {
-            walkbiasangle = 0.0f;
-        }
-        else
-        {
-            walkbiasangle+= 10;
-        }
-        walkbias = (float)sin(walkbiasangle * piover180)/20.0f;
-
-        updateGL();
-        break;
-
-                case Qt::Key_Down:
-        xpos += (float)sin(heading*piover180) * 0.05f;
-        zpos += (float)cos(heading*piover180) * 0.05f;
-        if (walkbiasangle <= 1.0f)
-        {
-            walkbiasangle = 359.0f;
-        }
-        else
-        {
-            walkbiasangle-= 10;
-        }
-        walkbias = (float)sin(walkbiasangle * piover180)/20.0f;
-
-        updateGL();
-        break;
-
-                case Qt::Key_Left:
-
-        heading += 1.0f;
-        yrot = heading;
-
-        updateGL();
-        break;
-
-                case Qt::Key_Right:
-
-        heading -= 1.0f;
-        yrot = heading;
-
-        updateGL();
-
-        break;
-
-                case Qt::Key_PageUp:
-        lookupdown-= 1.0f;
-
-        updateGL();
-        break;
-
-                case Qt::Key_PageDown:
-        lookupdown+= 1.0f;
-
-        updateGL();
-        break;
     }
 }
 
