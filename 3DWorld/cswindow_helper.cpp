@@ -27,14 +27,11 @@ void CSWindow::mouseMoveEvent(QMouseEvent *event)
 }
 void CSWindow::keyPressEvent(QKeyEvent *event)
 {
-    int dr= 5;
-    float dx = .5f;
     switch(event->key()){
     case ESCAPE: // kill everything.
         /* exit the program...normal termination. */
         exit(1);
-        break; // redundant.
-        //lighting
+        break;
     case 'b':
     case 'B': // switch the blending
         printf("B/b pressed; blending is: %d\n", blend);
@@ -76,13 +73,13 @@ void CSWindow::keyPressEvent(QKeyEvent *event)
         z += 0.2f;
         lookupdown += 1.0f;
         break;
-    case 16777234:			//left
+    case 65:			//a
         yrot += 1.5f;
         break;
-    case 16777236:
+    case 68:                    //d
         yrot -= 1.5f;
         break;
-    case 16777235:
+    case 87:                   //w
         xpos -= (float)sin(yrot*piover180) * 0.05f;
         zpos -= (float)cos(yrot*piover180) * 0.05f;
         if (walkbiasangle >= 359.0f)
@@ -91,7 +88,7 @@ void CSWindow::keyPressEvent(QKeyEvent *event)
             walkbiasangle+= 10;
         walkbias = (float)sin(walkbiasangle * piover180)/20.0f;
         break;
-    case 16777237:
+    case 83:                //s
         xpos += (float)sin(yrot*piover180) * 0.05f;
         zpos += (float)cos(yrot*piover180) * 0.05f;
         if (walkbiasangle <= 1.0f)
