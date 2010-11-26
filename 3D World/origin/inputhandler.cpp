@@ -65,64 +65,6 @@ int OriginWindow::getRotationAngle(bool* valid)
     return value;
 }
 
-void OriginWindow::timerLoop()
-{
-    bool needsToUpdateGL = false;
-
-    // Handle KeysPressed
-    if (keysPressed.w)
-    {
-        xpos += (float)sin(heading*piover180) * 0.03f;
-        zpos -= (float)cos(heading*piover180) * 0.03f;
-        if (walkbiasangle >= 359.0f)
-        {
-            walkbiasangle = 0.0f;
-        }
-        else
-        {
-            walkbiasangle+= 10;
-        }
-        walkbias = (float)sin(walkbiasangle * piover180)/50.0f;
-
-        needsToUpdateGL = true;
-    }
-    if (keysPressed.s)
-    {
-        xpos -= (float)sin(heading*piover180) * 0.03f;
-        zpos += (float)cos(heading*piover180) * 0.03f;
-        if (walkbiasangle <= 1.0f)
-        {
-            walkbiasangle = 359.0f;
-        }
-        else
-        {
-            walkbiasangle-= 10;
-        }
-        walkbias = (float)sin(walkbiasangle * piover180)/50.0f;
-
-        needsToUpdateGL = true;
-    }
-    if (keysPressed.a)
-    {
-        xpos -= (float)cos(heading*piover180) * 0.03f;
-        zpos -= (float)sin(heading*piover180) * 0.03f;
-
-        needsToUpdateGL = true;
-    }
-    if (keysPressed.d)
-    {
-
-        xpos += (float)cos(heading*piover180) * 0.03f;
-        zpos += (float)sin(heading*piover180) * 0.03f;
-
-        needsToUpdateGL = true;
-    }
-
-    //UpdateGL
-    if (needsToUpdateGL)
-        updateGL();
-}
-
 void OriginWindow::mousePressEvent(QMouseEvent *e)
 {
 

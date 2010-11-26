@@ -11,7 +11,9 @@
 /* global variables */
 struct Scene{
     MyObject obj[MAX_OBJECTS];			//objects
+    MyObject prop[MAX_OBJECTS];                 //props
     int objcount;				//number of loaded objects
+    int propcount;				//number of loaded props
     int curObject;				//index of selected object
 
     GLUquadricObj	*q;			// Quadratic For Drawing Light Spheres

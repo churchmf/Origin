@@ -3,10 +3,9 @@
 OriginWindow::OriginWindow(QComboBox* transformationSelector, QTableWidget *transformationTable, QComboBox* rotationAxisSelector, QSpinBox* rotationAnglePicker, QWidget *parent) : QGLWidget(parent)
 {
     setFormat(QGLFormat(QGL::DoubleBuffer|QGL::DepthBuffer|QGL::StencilBuffer));
-    //setGeometry(100,100,600,600);
     setFocusPolicy(Qt::StrongFocus);
 
-    // setup widget pointers
+    // Setup widget pointers
     this->transformationSelector = transformationSelector;
     this->transformationTable = transformationTable;
 
@@ -16,7 +15,7 @@ OriginWindow::OriginWindow(QComboBox* transformationSelector, QTableWidget *tran
     // enable mouse cursor tracking
     //setMouseTracking(true);
 
-    //init
+    //Initialization
     walkbias = 0;
     walkbiasangle = 0;
     lookupdown = 0;
@@ -30,10 +29,6 @@ OriginWindow::OriginWindow(QComboBox* transformationSelector, QTableWidget *tran
 
 void OriginWindow::initializeGL()
 {
-    // grab cursor and mouse
-    //const QCursor & cursor = QCursor(Qt::BlankCursor);
-    //grabMouse ( cursor );
-
     loadGLTextures();
     loadTriangles();
 
@@ -297,4 +292,87 @@ void OriginWindow::loadLevel()
         // Compute the normals for the object.
         o.calcNormals();
     }
+}
+
+void OriginWindow::updatePlayerPosition()
+{
+    // Handle KeysPressed
+    if (keysPressed.w)
+    {
+        xpos += (float)sin(heading*piover180) * 0.03f;
+        zpos -= (float)cos(heading*piover180) * 0.03f;
+        if (walkbiasangle >= 359.0f)
+        {
+            walkbiasangle = 0.0f;
+        }
+        else
+        {
+            walkbiasangle+= 10;
+        }
+        walkbias = (float)sin(walkbiasangle * piover180)/50.0f;
+    }
+    if (keysPressed.s)
+    {
+        xpos -= (float)sin(heading*piover180) * 0.03f;
+        zpos += (float)cos(heading*piover180) * 0.03f;
+        if (walkbiasangle <= 1.0f)
+        {
+            walkbiasangle = 359.0f;
+        }
+        else
+        {
+            walkbiasangle-= 10;
+        }
+        walkbias = (float)sin(walkbiasangle * piover180)/50.0f;
+    }
+    if (keysPressed.a)
+    {
+        xpos -= (float)cos(heading*piover180) * 0.03f;
+        zpos -= (float)sin(heading*piover180) * 0.03f;
+
+    }
+    if (keysPressed.d)
+    {
+
+        xpos += (float)cos(heading*piover180) * 0.03f;
+        zpos += (float)sin(heading*piover180) * 0.03f;
+
+    }
+}
+
+void OriginWindow::updatePropsPosition()
+{
+    for(int i=0; i<scene.propcount; i++)
+    {
+        // Create a reference to the prop.
+        MyObject& o = scene.prop[i];
+        MyPoint& goal = o.goal;
+        MyPoint& curPosition = o.position;
+
+        // If the prop is near the goal, do nothing
+        if (curPosition.isNear(goal))
+            continue;
+
+        // Otherwise, get the direction to move
+        MyPoint diff = goal.minus(curPosition);
+        diff.normalize();
+
+        // Move towards the goal
+        curPosition.x += diff.x * PROP_STEP;
+        curPosition.y += diff.y * PROP_STEP;
+        curPosition.z += diff.z * PROP_STEP;
+    }
+}
+
+// Main program loop
+void OriginWindow::timerLoop()
+{
+    //Update the player's position
+    updatePlayerPosition();
+
+    //Update the props' position
+    updatePropsPosition();
+
+    //UpdateGL
+    updateGL();
 }

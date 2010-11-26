@@ -48,6 +48,26 @@ MyPoint MyPoint::times(float c){
     res.z= z*c;
     return res;
 }
+
+float MyPoint::length(MyPoint p2)
+{
+    int diffX = p2.x - x;
+    int diffY = p2.y - y;
+    int diffZ = p2.z - z;
+    return sqrt (diffX * diffX + diffY * diffY + diffZ * diffZ);
+}
+
+bool MyPoint::equals(MyPoint p2)
+{
+    return x == p2.x && y == p2.y && z == p2.z;
+}
+
+bool MyPoint::isNear(MyPoint p2)
+{
+    float length = this->length(p2);
+    return length < PROP_STEP;
+}
+
 //return a vector with length 1 in the same direction
 MyPoint MyPoint::normalize(){
     float len= sqrt(x*x+y*y+z*z);

@@ -46,24 +46,30 @@ public slots:
 protected:
     void initializeGL();
     void resizeGL( int width, int height );
+    void paintGL();
 
+    //User Input Parsing
     Vector3 getTransformationVector(bool* valid);
     int getTransformationType(bool* valid);
     int getRotationAxis(bool* valid);
     int getRotationAngle(bool* valid);
 
+    //Update Loops
+    void updatePlayerPosition();
+    void updatePropsPosition();
 
-    void paintGL();
-
+    //User Input Events
+    void updateKeyState(int key, bool isPressed);
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
-    void updateKeyState(int key, bool isPressed);
 
 private:
+    //Event timer
     QTimer* timer;
     Scene scene;
+
     // Widgets
     QSpinBox* rotationAnglePicker;
     QComboBox* rotationAxisSelector;
@@ -86,7 +92,10 @@ private:
     void loadTriangles();
     void loadGLTextures();
     void loadLevel();
+
+    // Last mouse position
     QPoint lastPos;
+    // Keys currently pressed
     KeyState keysPressed;
 };
 #endif
