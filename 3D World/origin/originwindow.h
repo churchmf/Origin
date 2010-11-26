@@ -9,6 +9,7 @@
 #include <QTextStream.h>
 #include <QStringList.h>
 #include <math.h>
+#include "scene.h"
 #include "iostream"
 
 #define IO_ReadOnly QIODevice::ReadOnly
@@ -54,6 +55,7 @@ protected:
     void keyPressEvent(QKeyEvent *event);
 
 private:
+    Scene scene;
     // Widgets
     QSpinBox* rotationAnglePicker;
     QComboBox* rotationAxisSelector;
@@ -75,6 +77,7 @@ private:
 
     void loadTriangles();
     void loadGLTextures();
+    void loadLevel();
     QPoint lastPos;
 };
 #endif

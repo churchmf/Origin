@@ -186,3 +186,74 @@ void OriginWindow::loadGLTextures()
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_NEAREST);
     gluBuild2DMipmaps(GL_TEXTURE_2D, 3, t.width(), t.height(), GL_RGBA, GL_UNSIGNED_BYTE, t.bits());
 }
+
+void OriginWindow::loadLevel()
+{
+    // Get the fileName from a file picker.
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Level"), "", tr("Level Files (*.txt, *.lvl)"));
+
+    // Will be "" if the user canceled the dialog.
+    if(fileName == "")
+    {
+        printf("Dialog window was canceled.\n");
+        return;
+    }
+    // Create the file.
+    QFile file(fileName);
+
+    // Stop if the file cannot be opened in ReadOnly or Text mode.
+    if(!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        printf("Couldn't open the file.\n");
+        if(!file.exists())
+            printf("File doesn't exist.\n");
+        return;
+    }
+    // Create the input stream.
+    QTextStream in(&file);
+
+    // Get the number of objects in the scene. 0 if not an int.
+    in >> scene.objcount;
+
+    // For each object stored in the file,
+    for(int i=0; i<scene.objcount; i++)
+    {
+        // Create a reference to the object.
+        MyObject& o = scene.obj[i];
+
+        // Read in the number of points.
+        in >> o.nPoints;
+
+        // For each point,
+        for(int j=0; j<o.nPoints; j++){
+            // Read in the location.
+            in >> o.points[j].x;
+            in >> o.points[j].y;
+            in >> o.points[j].z;
+        }
+
+        // Read in the number of planes.
+        in >> o.nPlanes;
+
+        // For each plane,
+        for(int j=0; j<o.nPlanes; j++)
+        {
+            // Read in the number of points on the plane.
+            in >> o.planes[j].nPoints;
+
+            // For each point,
+            for(int k=0; k<o.planes[j].nPoints; k++)
+            {
+                in >> o.planes[j].pids[k];
+            }
+
+            // Read in the plane's colour information.
+            in >> o.planes[j].color.x;
+            in >> o.planes[j].color.y;
+            in >> o.planes[j].color.z;
+        }
+
+        // Set the object as casting a shadow.
+        o.castsShadow = 1;
+    }
+}
