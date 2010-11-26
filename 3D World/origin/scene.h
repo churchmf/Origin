@@ -4,7 +4,7 @@
 #include <qgl.h>
 #include "3dobject.h"
 
-//Constants - do not edit these
+//Constants
 #define INF_DIST 100
 #define MAX_OBJECTS 10
 

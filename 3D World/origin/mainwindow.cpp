@@ -54,7 +54,8 @@ MainWindow::MainWindow(QWidget *parent) : QDialog (parent)
     transformationTable->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     transformationTable->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     transformationTable->setCornerButtonEnabled(false);
-    transformationTable->horizontalHeader()->setHighlightSections(true);
+    transformationTable->setSelectionMode(QAbstractItemView::NoSelection);
+    transformationTable->horizontalHeader()->setHighlightSections(false);
     transformationTable->horizontalHeader()->setStretchLastSection(true);
     transformationTable->verticalHeader()->setVisible(false);
     transformationTable->verticalHeader()->setHighlightSections(false);
@@ -65,6 +66,9 @@ MainWindow::MainWindow(QWidget *parent) : QDialog (parent)
     rotationAnglePicker = new QSpinBox();
     sizePolicy1.setHeightForWidth(rotationAnglePicker->sizePolicy().hasHeightForWidth());
     rotationAnglePicker->setSizePolicy(sizePolicy1);
+    rotationAnglePicker->setMaximum(359);
+    rotationAnglePicker->setMinimum(0);
+
 
     //setup transformationButton
     transformationButton = new QPushButton(tr("Apply Transformation"));
@@ -100,7 +104,7 @@ MainWindow::MainWindow(QWidget *parent) : QDialog (parent)
     horizontalLayout->addWidget(rotationAnglePicker);
     horizontalLayout->addWidget(rotationButton);
 
-    //Setup button listners
+    //Setup button listeners
     connect(transformationButton,SIGNAL(clicked()),myWin,SLOT(applyTransformation()));
     connect(rotationButton,SIGNAL(clicked()),myWin,SLOT(applyRotation()));
 

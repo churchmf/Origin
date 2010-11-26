@@ -65,6 +65,64 @@ int OriginWindow::getRotationAngle(bool* valid)
     return value;
 }
 
+void OriginWindow::timerLoop()
+{
+    bool needsToUpdateGL = false;
+
+    // Handle KeysPressed
+    if (keysPressed.w)
+    {
+        xpos += (float)sin(heading*piover180) * 0.03f;
+        zpos -= (float)cos(heading*piover180) * 0.03f;
+        if (walkbiasangle >= 359.0f)
+        {
+            walkbiasangle = 0.0f;
+        }
+        else
+        {
+            walkbiasangle+= 10;
+        }
+        walkbias = (float)sin(walkbiasangle * piover180)/50.0f;
+
+        needsToUpdateGL = true;
+    }
+    if (keysPressed.s)
+    {
+        xpos -= (float)sin(heading*piover180) * 0.03f;
+        zpos += (float)cos(heading*piover180) * 0.03f;
+        if (walkbiasangle <= 1.0f)
+        {
+            walkbiasangle = 359.0f;
+        }
+        else
+        {
+            walkbiasangle-= 10;
+        }
+        walkbias = (float)sin(walkbiasangle * piover180)/50.0f;
+
+        needsToUpdateGL = true;
+    }
+    if (keysPressed.a)
+    {
+        xpos -= (float)cos(heading*piover180) * 0.03f;
+        zpos -= (float)sin(heading*piover180) * 0.03f;
+
+        needsToUpdateGL = true;
+    }
+    if (keysPressed.d)
+    {
+
+        xpos += (float)cos(heading*piover180) * 0.03f;
+        zpos += (float)sin(heading*piover180) * 0.03f;
+
+        needsToUpdateGL = true;
+    }
+
+    //UpdateGL
+    if (needsToUpdateGL)
+        updateGL();
+}
+
 void OriginWindow::mousePressEvent(QMouseEvent *e)
 {
 
@@ -110,12 +168,43 @@ void OriginWindow::mouseMoveEvent(QMouseEvent *e)
     //printf("lookupdown %f \n heading %f \n", lookupdown, heading);
     lastPos = e->pos();
 }
+void OriginWindow::keyReleaseEvent( QKeyEvent *e )
+{
+    int key = e->key();
+    updateKeyState(key,false);
+}
+
+void OriginWindow::updateKeyState(int key, bool isPressed)
+{
+    if (key == Qt::Key_W)
+    {
+        keysPressed.w = isPressed;
+    }
+    else if (key == Qt::Key_S)
+    {
+        keysPressed.s = isPressed;
+    }
+    else if (key == Qt::Key_A)
+    {
+        keysPressed.a = isPressed;
+    }
+    else if (key == Qt::Key_D)
+    {
+        keysPressed.d = isPressed;
+    }
+    else if (key == Qt::Key_Space)
+    {
+        keysPressed.space = isPressed;
+    }
+}
 
 void OriginWindow::keyPressEvent( QKeyEvent *e )
 {
-    switch( e->key() )
+    int key = e->key();
+    updateKeyState(key,true);
+
+    if (key == Qt::Key_B)
     {
-    case Qt::Key_B:
         if (blend)
         {
             blend = false;
@@ -130,69 +219,22 @@ void OriginWindow::keyPressEvent( QKeyEvent *e )
         }
 
         updateGL();
-        break;
+    }
+    else if (key == Qt::Key_Escape)
+    {
+        exit(0);
+    }
+    else if (key == Qt::Key_O)
+    {
+        OriginWindow::loadLevel();
+    }
 
-   case Qt::Key_F:
+    else if (key == Qt::Key_F)
+    {
         filter++;
         if( filter > 2 )
             filter = 0;
 
         updateGL();
-        break;
-
-   case Qt::Key_W:
-        xpos += (float)sin(heading*piover180) * 0.03f;
-        zpos -= (float)cos(heading*piover180) * 0.03f;
-        if (walkbiasangle >= 359.0f)
-        {
-            walkbiasangle = 0.0f;
-        }
-        else
-        {
-            walkbiasangle+= 10;
-        }
-        walkbias = (float)sin(walkbiasangle * piover180)/50.0f;
-
-        updateGL();
-        break;
-
-    case Qt::Key_S:
-        xpos -= (float)sin(heading*piover180) * 0.03f;
-        zpos += (float)cos(heading*piover180) * 0.03f;
-        if (walkbiasangle <= 1.0f)
-        {
-            walkbiasangle = 359.0f;
-        }
-        else
-        {
-            walkbiasangle-= 10;
-        }
-        walkbias = (float)sin(walkbiasangle * piover180)/50.0f;
-
-        updateGL();
-        break;
-
-    case Qt::Key_A:
-        xpos -= (float)cos(heading*piover180) * 0.03f;
-        zpos -= (float)sin(heading*piover180) * 0.03f;
-
-        updateGL();
-        break;
-
-    case Qt::Key_D:
-
-        xpos += (float)cos(heading*piover180) * 0.03f;
-        zpos += (float)sin(heading*piover180) * 0.03f;
-
-        updateGL();
-        break;
-
-    case Qt::Key_Escape:
-        exit(0);
-        break;
-
-    case Qt::Key_O:
-        OriginWindow::loadLevel();
-        break;
     }
 }

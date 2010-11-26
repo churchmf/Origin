@@ -3,9 +3,7 @@
 OriginWindow::OriginWindow(QComboBox* transformationSelector, QTableWidget *transformationTable, QComboBox* rotationAxisSelector, QSpinBox* rotationAnglePicker, QWidget *parent) : QGLWidget(parent)
 {
     setFormat(QGLFormat(QGL::DoubleBuffer|QGL::DepthBuffer|QGL::StencilBuffer));
-    setGeometry(100,100,600,600);
-    _title="Origin";
-    setWindowTitle(tr(_title));
+    //setGeometry(100,100,600,600);
     setFocusPolicy(Qt::StrongFocus);
 
     // setup widget pointers
@@ -18,11 +16,16 @@ OriginWindow::OriginWindow(QComboBox* transformationSelector, QTableWidget *tran
     // enable mouse cursor tracking
     //setMouseTracking(true);
 
+    //init
     walkbias = 0;
     walkbiasangle = 0;
     lookupdown = 0;
     filter = 0;
     lastPos = QPoint();
+    keysPressed = KeyState();
+    timer = new QTimer(this);
+    connect(timer, SIGNAL(timeout()), this, SLOT(timerLoop()));
+    timer->start(18);
 }
 
 void OriginWindow::initializeGL()
@@ -257,7 +260,7 @@ void OriginWindow::loadLevel()
         in >> o.nPoints;
 
         // For each point,
-        for(int j=0; j<o.nPoints; j++){
+        for(unsigned int j=0; j<o.nPoints; j++){
             // Read in the location.
             in >> o.points[j].x;
             in >> o.points[j].y;
@@ -268,13 +271,13 @@ void OriginWindow::loadLevel()
         in >> o.nPlanes;
 
         // For each plane,
-        for(int j=0; j<o.nPlanes; j++)
+        for(unsigned int j=0; j<o.nPlanes; j++)
         {
             // Read in the number of points on the plane.
             in >> o.planes[j].nPoints;
 
             // For each point,
-            for(int k=0; k<o.planes[j].nPoints; k++)
+            for(unsigned int k=0; k<o.planes[j].nPoints; k++)
             {
                 in >> o.planes[j].pids[k];
             }

@@ -1,12 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-//#include <QMainWindow>
 #include "originwindow.h"
-
-//namespace Ui {
-  //  class MainWindow;
-//}
 
 class MainWindow : public QDialog
 {
@@ -19,7 +14,6 @@ public:
 
 private:
     char *_title;
-    //Ui::MainWindow *ui;
     OriginWindow *myWin;
 
     // Widgets

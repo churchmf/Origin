@@ -16,6 +16,11 @@
 
 const float piover180 = 0.0174532925f;
 
+// track the keystate since Qt is ghetto
+typedef struct {
+    bool w,a,s,d,space,e;
+} KeyState;
+
 typedef struct {
     GLfloat x,y,z;
 } Vector3;
@@ -36,9 +41,9 @@ public:
 public slots:
     void applyTransformation();
     void applyRotation();
+    void timerLoop();
 
 protected:
-    char *_title;
     void initializeGL();
     void resizeGL( int width, int height );
 
@@ -53,8 +58,11 @@ protected:
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
     void keyPressEvent(QKeyEvent *event);
+    void keyReleaseEvent(QKeyEvent *event);
+    void updateKeyState(int key, bool isPressed);
 
 private:
+    QTimer* timer;
     Scene scene;
     // Widgets
     QSpinBox* rotationAnglePicker;
@@ -79,5 +87,6 @@ private:
     void loadGLTextures();
     void loadLevel();
     QPoint lastPos;
+    KeyState keysPressed;
 };
 #endif
