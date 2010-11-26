@@ -11,7 +11,8 @@ This file is borrowed from Assignment3 of CMPUT411 at the University of Alberta.
 #define MAX_OBJECT_POINTS 800
 #define MAX_OBJECT_PLANES 800
 #define MAX_PLANE_POINTS 10
-#define PROP_STEP 1.0f
+#define PROP_TRANSFORM_STEP 1.0f
+#define PROP_ROTATE_STEP 1.0f
 
 typedef float GLvector4f[4];		// Typedef's For VMatMult Procedure
 typedef float GLmatrix16f[16];		// Typedef's For VMatMult Procedure
@@ -34,6 +35,7 @@ struct MyPoint{
         float length(MyPoint p2);
         bool equals(MyPoint p2);
         bool isNear(MyPoint p2);
+        MyPoint plus(MyPoint p2);
 };
 
 // structure describing an object's face
@@ -55,7 +57,8 @@ struct MyObject{
         MyPlane planes[MAX_OBJECT_PLANES];		//surfaces
 
         MyPoint position;				//location
-        MyPoint goal;                                   //goal
+        MyPoint goalPosition;                           //goal position
+        MyPoint goalRotation;                           //goal rotation
         MyPoint rotation;				//rotation around (x,y,z) axes
 
         bool castsShadow;				//does it cast a shadow?
@@ -68,6 +71,7 @@ struct MyObject{
         void setConnectivity();				//find neighbor planes for each plane of the object
         void print();					//for debug
         void calcNormals();				//calculate normals for all planes
+        void scale(MyPoint k);                          //scale an object(x,y,z) by the point(kx,ky,kz)
 };
 
 

@@ -7,6 +7,7 @@
 //Constants
 #define INF_DIST 100
 #define MAX_OBJECTS 10
+#define NO_SELECTION -1
 
 /* global variables */
 struct Scene{
@@ -14,7 +15,7 @@ struct Scene{
     MyObject prop[MAX_OBJECTS];                 //props
     int objcount;				//number of loaded objects
     int propcount;				//number of loaded props
-    int curObject;				//index of selected object
+    int selectedProp;				//index of selected prop
 
     GLUquadricObj	*q;			// Quadratic For Drawing Light Spheres
 

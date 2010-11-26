@@ -8,8 +8,6 @@ class MainWindow : public QDialog
     Q_OBJECT
 
 public:
-    enum TransformationType { Translate, Scale };
-    enum RotationAxis { RotateByX, RotateByY, RotateByZ };
     MainWindow(QWidget *parent = 0);
 
 private:

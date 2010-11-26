@@ -134,6 +134,25 @@ void OriginWindow::paintGL()
         // Discard matrix changes.
         glPopMatrix();
     }
+
+    // Crosshair (In Ortho View)					// Store The Projection Matrix
+    glLoadIdentity();							// Reset The Projection Matrix
+    glOrtho(0,this->width(),0,this->height(),-1,1);			// Set Up An Ortho Screen
+    glMatrixMode(GL_MODELVIEW);                                         // Select The Modelview Matrix
+    glTranslatef(this->width()/2, this->height()/2, 1);                 // Move To The Middle of the screen
+    // Draw The Crosshair
+    glEnable(GL_BLEND);
+    glDisable(GL_DEPTH_TEST);
+    glBindTexture(GL_TEXTURE_2D, texture[3]);                           // Select The Correct Texture
+    glBegin(GL_QUADS);							// Start Drawing A Quad
+    glTexCoord2f(0.0f,0.0f); glVertex3f(-8,-8,0.0f);                    // Bottom Left
+    glTexCoord2f(1.0f,0.0f); glVertex3f( 8,-8,0.0f);                    // Bottom Right
+    glTexCoord2f(1.0f,1.0f); glVertex3f( 8, 8,0.0f);                    // Top Right
+    glTexCoord2f(0.0f,1.0f); glVertex3f(-8, 8,0.0f);                    // Top Left
+    glEnd();
+    // Done Drawing Quad
+    glDisable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
 }
 
 void OriginWindow::loadTriangles()
@@ -214,6 +233,19 @@ void OriginWindow::loadGLTextures()
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_NEAREST);
     gluBuild2DMipmaps(GL_TEXTURE_2D, 3, t.width(), t.height(), GL_RGBA, GL_UNSIGNED_BYTE, t.bits());
+
+    //Crosshair texture
+    if ( !b.load( "../images/crosshair.bmp" ) )
+    {
+        b = QImage( 16, 16, QImage::Format_Mono);
+        b.fill( Qt::green );
+    }
+
+    t = QGLWidget::convertToGLFormat( b );
+    glBindTexture( GL_TEXTURE_2D, texture[3] );
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    glTexImage2D( GL_TEXTURE_2D, 0, 3, t.width(), t.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, t.bits() );
 }
 
 void OriginWindow::loadLevel()
@@ -333,10 +365,8 @@ void OriginWindow::updatePlayerPosition()
     }
     if (keysPressed.d)
     {
-
         xpos += (float)cos(heading*piover180) * 0.03f;
         zpos += (float)sin(heading*piover180) * 0.03f;
-
     }
 }
 
@@ -346,7 +376,7 @@ void OriginWindow::updatePropsPosition()
     {
         // Create a reference to the prop.
         MyObject& o = scene.prop[i];
-        MyPoint& goal = o.goal;
+        MyPoint& goal = o.goalPosition;
         MyPoint& curPosition = o.position;
 
         // If the prop is near the goal, do nothing
@@ -358,9 +388,33 @@ void OriginWindow::updatePropsPosition()
         diff.normalize();
 
         // Move towards the goal
-        curPosition.x += diff.x * PROP_STEP;
-        curPosition.y += diff.y * PROP_STEP;
-        curPosition.z += diff.z * PROP_STEP;
+        curPosition.x += diff.x * PROP_TRANSFORM_STEP;
+        curPosition.y += diff.y * PROP_TRANSFORM_STEP;
+        curPosition.z += diff.z * PROP_TRANSFORM_STEP;
+    }
+}
+
+void OriginWindow::updatePropsRotation()
+{
+    for(int i=0; i<scene.propcount; i++)
+    {
+        // Create a reference to the prop.
+        MyObject& o = scene.prop[i];
+        MyPoint& goal = o.goalRotation;
+        MyPoint& curRotation = o.rotation;
+
+        // If the prop is near the goal, do nothing
+        if (curRotation.equals(goal))
+            continue;
+
+        // Otherwise, get the direction to move
+        MyPoint diff = goal.minus(curRotation);
+        diff.normalize();
+
+        // Move towards the goal
+        curRotation.x += diff.x * PROP_ROTATE_STEP;
+        curRotation.y += diff.y * PROP_ROTATE_STEP;
+        curRotation.z += diff.z * PROP_ROTATE_STEP;
     }
 }
 
@@ -372,6 +426,9 @@ void OriginWindow::timerLoop()
 
     //Update the props' position
     updatePropsPosition();
+
+    //Update the props' rotation
+    updatePropsRotation();
 
     //UpdateGL
     updateGL();

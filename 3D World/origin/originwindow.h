@@ -16,6 +16,9 @@
 
 const float piover180 = 0.0174532925f;
 
+enum TransformationType { Translate, Scale };
+enum RotationAxis { RotateByX, RotateByY, RotateByZ };
+
 // track the keystate since Qt is ghetto
 typedef struct {
     bool w,a,s,d,space,e;
@@ -49,7 +52,7 @@ protected:
     void paintGL();
 
     //User Input Parsing
-    Vector3 getTransformationVector(bool* valid);
+    MyPoint getTransformationVector(bool* valid);
     int getTransformationType(bool* valid);
     int getRotationAxis(bool* valid);
     int getRotationAngle(bool* valid);
@@ -57,6 +60,7 @@ protected:
     //Update Loops
     void updatePlayerPosition();
     void updatePropsPosition();
+    void updatePropsRotation();
 
     //User Input Events
     void updateKeyState(int key, bool isPressed);
@@ -86,7 +90,7 @@ private:
     GLfloat lookupdown;
 
     GLuint filter;
-    GLuint texture[3];
+    GLuint texture[4];
     QList<Triangle> triangles;
 
     void loadTriangles();

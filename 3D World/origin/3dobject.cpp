@@ -65,7 +65,16 @@ bool MyPoint::equals(MyPoint p2)
 bool MyPoint::isNear(MyPoint p2)
 {
     float length = this->length(p2);
-    return length < PROP_STEP;
+    return length < PROP_TRANSFORM_STEP;
+}
+
+MyPoint MyPoint::plus(MyPoint p2)
+{
+    MyPoint res;
+    res.x= x+p2.x;
+    res.y= y+p2.y;
+    res.z= z+p2.z;
+    return res;
 }
 
 //return a vector with length 1 in the same direction
@@ -188,7 +197,7 @@ void MyObject::draw()
 //calculates normal vector for all planes of the object using 3 of its vertices
 void MyObject::calcNormals(){
     for (unsigned int i=0;i<nPlanes;i++){
-	planes[i].normal = points[planes[i].pids[1]].minus( points[planes[i].pids[0]] ).cross( points[planes[i].pids[2]].minus( points[planes[i].pids[1]] ) ).normalize();;
+        planes[i].normal = points[planes[i].pids[1]].minus( points[planes[i].pids[0]] ).cross( points[planes[i].pids[2]].minus( points[planes[i].pids[1]] ) ).normalize();
     }
 }
 
@@ -240,4 +249,15 @@ void  MyObject::renderShadow(float *lp){
 	set stencil buffer values by rendering the shadow quads twice.
 	You can (should) use castShadow in this function.
     */
+}
+
+//scale an object(x,y,z) by the point(kx,ky,kz)
+void MyObject::scale(MyPoint k)
+{
+    for (unsigned int i=0;i<nPoints;i++){
+        MyPoint& point = points[i];
+        point.x *= k.x;
+        point.y *= k.y;
+        point.z *= k.z;
+    }
 }

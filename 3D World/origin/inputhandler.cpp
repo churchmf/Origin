@@ -1,18 +1,34 @@
 #include "originwindow.h"
-#include "iostream"
 
 void OriginWindow::applyTransformation()
 {
     //verify that the input is valid
     bool validInput = true;
-    Vector3 transformation = getTransformationVector(&validInput);
+    MyPoint transformation = getTransformationVector(&validInput);
     int type = getTransformationType(&validInput);
 
     // if the input was invalid, do nothing
     if (!validInput)
         return;
 
-    printf("transform\n");
+    // if no prop is selected, do nothing
+    int propIndex = scene.selectedProp;
+    if (propIndex == NO_SELECTION)
+        return;
+
+    MyObject& selectedProp = scene.prop[propIndex];
+    // Translate
+    if (type == Translate)
+    {
+        selectedProp.goalPosition = (selectedProp.position).plus(transformation);
+        printf("Translate\n");
+    }
+    //Scale
+    else if (type == Scale)
+    {
+        selectedProp.scale(transformation);
+        printf("Scale\n");
+    }
 }
 
 void OriginWindow::applyRotation()
@@ -25,12 +41,39 @@ void OriginWindow::applyRotation()
     if (!validInput)
         return;
 
-    printf("rotate\n");
+    // if no prop is selected, do nothing
+    int propIndex = scene.selectedProp;
+    if (propIndex == NO_SELECTION)
+        return;
+
+    MyObject& selectedProp = scene.prop[propIndex];
+    // Rotate
+    if (axis == RotateByX)
+    {
+        selectedProp.goalRotation.x = (selectedProp.rotation).x + angle;
+        selectedProp.goalRotation.y = (selectedProp.rotation).y;
+        selectedProp.goalRotation.z = (selectedProp.rotation).z;
+        printf("RotateByX\n");
+    }
+    else if (axis == RotateByY)
+    {
+        selectedProp.goalRotation.x = (selectedProp.rotation).x;
+        selectedProp.goalRotation.y = (selectedProp.rotation).y + angle;
+        selectedProp.goalRotation.z = (selectedProp.rotation).z;
+        printf("RotateByY\n");
+    }
+    else if (axis == RotateByZ)
+    {
+        selectedProp.goalRotation.x = (selectedProp.rotation).x;
+        selectedProp.goalRotation.y = (selectedProp.rotation).y;
+        selectedProp.goalRotation.z = (selectedProp.rotation).z + angle;
+        printf("RotateByZ\n");
+    }
 }
 
-Vector3 OriginWindow::getTransformationVector(bool* valid)
+MyPoint OriginWindow::getTransformationVector(bool* valid)
 {
-    Vector3 transformation;
+    MyPoint transformation;
     bool isValid = true;
     transformation.x = (transformationTable->item(0,0)->data(Qt::DisplayRole)).toFloat(&isValid);
     *valid &= isValid;
