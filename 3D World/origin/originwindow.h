@@ -1,5 +1,6 @@
 #ifndef ORIGINWINDOW_H
 #define ORIGINWINDOW_H
+
 #include <QGLWidget>
 #include <QtGui>
 #include <qgl.h>
@@ -8,9 +9,15 @@
 #include <QTextStream.h>
 #include <QStringList.h>
 #include <math.h>
+#include "iostream"
+
 #define IO_ReadOnly QIODevice::ReadOnly
 
 const float piover180 = 0.0174532925f;
+
+typedef struct {
+    GLfloat x,y,z;
+} Vector3;
 
 typedef struct {
     GLfloat x, y, z, u, v;
@@ -23,13 +30,22 @@ typedef struct {
 class OriginWindow : public QGLWidget
 {
     Q_OBJECT
-
 public:
-    OriginWindow(QWidget *parent=0);
+    OriginWindow(QComboBox* transformationSelector, QTableWidget *transformationTable, QComboBox* rotationAxisSelector, QSpinBox* rotationAnglePicker, QWidget *parent=0);
+public slots:
+    void applyTransformation();
+    void applyRotation();
 
 protected:
+    char *_title;
     void initializeGL();
     void resizeGL( int width, int height );
+
+    Vector3 getTransformationVector(bool* valid);
+    int getTransformationType(bool* valid);
+    int getRotationAxis(bool* valid);
+    int getRotationAngle(bool* valid);
+
 
     void paintGL();
 
@@ -38,6 +54,12 @@ protected:
     void keyPressEvent(QKeyEvent *event);
 
 private:
+    // Widgets
+    QSpinBox* rotationAnglePicker;
+    QComboBox* rotationAxisSelector;
+    QTableWidget* transformationTable;
+    QComboBox* transformationSelector;
+
     bool blend;
     GLfloat heading;
     GLfloat xpos;
@@ -53,5 +75,6 @@ private:
 
     void loadTriangles();
     void loadGLTextures();
+    QPoint lastPos;
 };
 #endif

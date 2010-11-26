@@ -1,23 +1,111 @@
 #include "mainwindow.h"
-//#include "ui_mainwindow.h"
+const int COLUMN_COUNT = 3;
 
-MainWindow::MainWindow(QWidget *parent) : QDialog (parent)//QMainWindow(parent) ,  ui(new Ui::MainWindow)
+MainWindow::MainWindow(QWidget *parent) : QDialog (parent)
 {
-   // ui->setupUi(this);
-    //create and arrange ui components
-    myWin = new OriginWindow(parent);
+    resize(800, 600);
+    QSizePolicy sizePolicy1(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    sizePolicy1.setHorizontalStretch(0);
+    sizePolicy1.setVerticalStretch(0);
 
-    QVBoxLayout *layout = new QVBoxLayout;
-    layout->addWidget(myWin);
+    //vertical layout
+    QVBoxLayout* verticalLayout = new QVBoxLayout();
+    verticalLayout->setSpacing(2);
+    verticalLayout->setSizeConstraint(QLayout::SetDefaultConstraint);
+    verticalLayout->setContentsMargins(-1, -1, -1, 0);
 
-    setGeometry(myWin->geometry());
+    //setup transformationSelector
+    transformationSelector = new QComboBox();
+    sizePolicy1.setHeightForWidth(transformationSelector->sizePolicy().hasHeightForWidth());
+    transformationSelector->addItem("Translate", Translate);
+    transformationSelector->addItem("Scale", Scale);
+    transformationSelector->setSizePolicy(sizePolicy1);
 
-    _title="3D World Test";
+    //setup rotationAxisSelector
+    rotationAxisSelector = new QComboBox();
+    sizePolicy1.setHeightForWidth(rotationAxisSelector->sizePolicy().hasHeightForWidth());
+    rotationAxisSelector->addItem("Rotate by X", RotateByX);
+    rotationAxisSelector->addItem("Rotate by Y", RotateByY);
+    rotationAxisSelector->addItem("Rotate by Z", RotateByZ);
+    rotationAxisSelector->setSizePolicy(sizePolicy1);
+
+    //setup transformationTable
+    transformationTable = new QTableWidget(1,COLUMN_COUNT);
+    QStringList headers;
+    headers << "X" << "Y" << "Z";
+    transformationTable->setHorizontalHeaderLabels(headers);
+    transformationTable->setVerticalHeaderLabels(QStringList(""));
+    for (int i=0; i < COLUMN_COUNT; i++)
+    {
+        transformationTable->setItem(0,i, new QTableWidgetItem(0));
+        transformationTable->horizontalHeader()->setResizeMode(i,QHeaderView::Stretch);
+    }
+
+    QSizePolicy sizePolicy2(QSizePolicy::Expanding, QSizePolicy::Ignored);
+    sizePolicy2.setHorizontalStretch(0);
+    sizePolicy2.setVerticalStretch(0);
+    sizePolicy2.setHeightForWidth(transformationTable->sizePolicy().hasHeightForWidth());
+
+    transformationTable->setSizePolicy(sizePolicy2);
+    transformationTable->setMinimumSize(QSize(0, 50));
+    transformationTable->viewport()->setProperty("cursor", QVariant(QCursor(Qt::IBeamCursor)));
+    transformationTable->setFrameShape(QFrame::StyledPanel);
+    transformationTable->setFrameShadow(QFrame::Sunken);
+    transformationTable->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    transformationTable->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    transformationTable->setCornerButtonEnabled(false);
+    transformationTable->horizontalHeader()->setHighlightSections(true);
+    transformationTable->horizontalHeader()->setStretchLastSection(true);
+    transformationTable->verticalHeader()->setVisible(false);
+    transformationTable->verticalHeader()->setHighlightSections(false);
+    transformationTable->verticalHeader()->setMinimumSectionSize(19);
+    transformationTable->verticalHeader()->setStretchLastSection(true);
+
+    //setup rotationAnglePicker
+    rotationAnglePicker = new QSpinBox();
+    sizePolicy1.setHeightForWidth(rotationAnglePicker->sizePolicy().hasHeightForWidth());
+    rotationAnglePicker->setSizePolicy(sizePolicy1);
+
+    //setup transformationButton
+    transformationButton = new QPushButton(tr("Apply Transformation"));
+    sizePolicy1.setHeightForWidth(transformationButton->sizePolicy().hasHeightForWidth());
+    transformationButton->setSizePolicy(sizePolicy1);
+
+    //setup rotationButton
+    rotationButton = new QPushButton(tr("Apply Rotation"));
+    sizePolicy1.setHeightForWidth(rotationButton->sizePolicy().hasHeightForWidth());
+    rotationButton->setSizePolicy(sizePolicy1);
+
+    //create originwindow (pass in widgets for parsing)
+    myWin = new OriginWindow(transformationSelector, transformationTable, rotationAxisSelector, rotationAnglePicker, parent);
+    sizePolicy1.setHeightForWidth(myWin->sizePolicy().hasHeightForWidth());
+    myWin->setSizePolicy(sizePolicy1);
+
+    //horizontal layout
+    QHBoxLayout* horizontalLayout = new QHBoxLayout();
+    horizontalLayout->setSpacing(0);
+    horizontalLayout->setSizeConstraint(QLayout::SetMinimumSize);
+    horizontalLayout->setContentsMargins(0, 0, -1, 0);
+
+    verticalLayout->addWidget(myWin);
+    verticalLayout->addLayout(horizontalLayout);
+    verticalLayout->setStretch(0, 1);
+
+    horizontalLayout->addWidget(transformationSelector);
+    horizontalLayout->addWidget(transformationTable);
+    horizontalLayout->addWidget(transformationButton);
+    QSpacerItem* horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+    horizontalLayout->addItem(horizontalSpacer);
+    horizontalLayout->addWidget(rotationAxisSelector);
+    horizontalLayout->addWidget(rotationAnglePicker);
+    horizontalLayout->addWidget(rotationButton);
+
+    //Setup button listners
+    connect(transformationButton,SIGNAL(clicked()),myWin,SLOT(applyTransformation()));
+    connect(rotationButton,SIGNAL(clicked()),myWin,SLOT(applyRotation()));
+
+    //setGeometry(myWin->geometry());
+    _title="Origin";
     setWindowTitle(tr(_title));
-    setLayout(layout);
+    setLayout(verticalLayout);
 }
-
-//MainWindow::~MainWindow()
-//{
-    //delete ui;
-//}

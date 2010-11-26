@@ -1,26 +1,36 @@
 #include "originwindow.h"
-#include "iostream"
 
-OriginWindow::OriginWindow(QWidget *parent) : QGLWidget(parent)
+OriginWindow::OriginWindow(QComboBox* transformationSelector, QTableWidget *transformationTable, QComboBox* rotationAxisSelector, QSpinBox* rotationAnglePicker, QWidget *parent) : QGLWidget(parent)
 {
-    // listen for key events
+    setFormat(QGLFormat(QGL::DoubleBuffer|QGL::DepthBuffer|QGL::StencilBuffer));
+    setGeometry(100,100,600,600);
+    _title="Origin";
+    setWindowTitle(tr(_title));
     setFocusPolicy(Qt::StrongFocus);
 
-    // enable mouse cursor tracking
-    setMouseTracking(true);
+    // setup widget pointers
+    this->transformationSelector = transformationSelector;
+    this->transformationTable = transformationTable;
 
-    // grab cursor and mouse
-    const QCursor & cursor = QCursor();
-    grabMouse ( cursor );
+    this->rotationAxisSelector = rotationAxisSelector;
+    this->rotationAnglePicker = rotationAnglePicker;
+
+    // enable mouse cursor tracking
+    //setMouseTracking(true);
 
     walkbias = 0;
     walkbiasangle = 0;
     lookupdown = 0;
     filter = 0;
+    lastPos = QPoint();
 }
 
 void OriginWindow::initializeGL()
 {
+    // grab cursor and mouse
+    //const QCursor & cursor = QCursor(Qt::BlankCursor);
+    //grabMouse ( cursor );
+
     loadGLTextures();
     loadTriangles();
 
@@ -51,6 +61,9 @@ void OriginWindow::resizeGL( int width, int height )
 
 void OriginWindow::paintGL()
 {
+    //const QCursor & cursor = QCursor(Qt::BlankCursor);
+    //grabMouse ( cursor );
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
 
@@ -58,7 +71,7 @@ void OriginWindow::paintGL()
     GLfloat xtrans = -xpos;
     GLfloat ztrans = -zpos;
     GLfloat ytrans = -walkbias-0.25f;
-    GLfloat sceneroty = 360.0f - yrot;
+    GLfloat sceneroty = yrot;
 
     glRotatef(lookupdown,1.0f,0,0);
     glRotatef(sceneroty,0,1.0f,0);

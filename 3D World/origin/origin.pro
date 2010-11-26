@@ -1,7 +1,12 @@
 QT += opengl
+
+TARGET = origin
+CONFIG   += console
+CONFIG   -= app_bundle
+
 TEMPLATE = app
 INCLUDEPATH += .
-CONFIG   += console
+
 
 # Input
 HEADERS += originwindow.h \
@@ -10,6 +15,3 @@ SOURCES += main.cpp \
     mainwindow.cpp \
     originwindow.cpp \
     inputhandler.cpp
-
-FORMS += \
-    mainwindow.ui
