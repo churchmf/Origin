@@ -74,60 +74,73 @@ void MyObject::print(){
 
 // load object from file
 int MyObject::ReadObject(char *st, MyObject *o){
-    FILE *file;
-    unsigned int i,j;
+//    FILE *file;
+//    unsigned int i,j;
 
-    file = fopen(st, "r");
-    if (!file) return false;
-    //points
-    fscanf(file, "%d", &(o->nPoints));
-    for (i=1;i<=o->nPoints;i++){
-	fscanf(file, "%f", &(o->points[i].x));
-	fscanf(file, "%f", &(o->points[i].y));
-	fscanf(file, "%f", &(o->points[i].z));
-    }
-    //planes
-    fscanf(file, "%d", &(o->nPlanes));
-    for (i=0;i<o->nPlanes;i++){
-	fscanf(file, "%d", &(o->planes[i].nPoints));
-	//read vertices
-	for(j=0; j<o->planes[i].nPoints; j++){
-	    fscanf(file, "%d", &(o->planes[i].pids[j]));
-	}
-	fscanf(file, "%f", &(o->planes[i].color.x));
-	fscanf(file, "%f", &(o->planes[i].color.y));
-	fscanf(file, "%f", &(o->planes[i].color.z));
-    }
-    o->castsShadow=1;
-    //o->print();
-    return true;
+//    file = fopen(st, "r");
+//    if (!file) return false;
+//    //points
+//    fscanf(file, "%d", &(o->nPoints));
+//    for (i=1;i<=o->nPoints;i++){
+//	fscanf(file, "%f", &(o->points[i].x));
+//	fscanf(file, "%f", &(o->points[i].y));
+//	fscanf(file, "%f", &(o->points[i].z));
+//    }
+//    //planes
+//    fscanf(file, "%d", &(o->nPlanes));
+//    for (i=0;i<o->nPlanes;i++){
+//	fscanf(file, "%d", &(o->planes[i].nPoints));
+//	//read vertices
+//	for(j=0; j<o->planes[i].nPoints; j++){
+//	    fscanf(file, "%d", &(o->planes[i].pids[j]));
+//	}
+//	fscanf(file, "%f", &(o->planes[i].color.x));
+//	fscanf(file, "%f", &(o->planes[i].color.y));
+//	fscanf(file, "%f", &(o->planes[i].color.z));
+//    }
+//    o->castsShadow=1;
+//    //o->print();
+//    return true;
 }
 
 // set neighbors of each plane
 // planes[i].neigh[j] should be set to index of neighbor with which plane i shares the edge
 // between its jth th and j+1th vertices.
-void MyObject::setConnectivity(){
-    /*
-	ENTER CODE HERE (for problem 3)
-	set neighbor array for each plane of the object
+void MyObject::setConnectivity()
+{
+    // for all planes p1 in obj
+    for(int i=0; i<nPlanes; i++){
+        MyPlane& plane1 = planes[i];
 
-	for all planes p1 in obj
-		for all planes p2 in obj (p2!=p1)
-			for all edges e1 in p1
-				for all edges e2 in p2
-					if e1==e2
-						set neighbor of e1 to e2
-    */
+        // for all planes p2 in obj (p2!=p1)
+        for(int j=i+1; j<nPlanes; j++){
+            MyPlane& plane2 = planes[j];
+
+            // for all edges e1 in p1
+            for(int k=0; k<plane1.nPoints; k++){
+                // e1
+                unsigned int p1e1 = plane1.pids[k];
+                unsigned int p1e2 = plane1.pids[(k+1)%plane1.nPoints];
+
+                // for all edges e2 in p2
+                for(int l=0; l<plane2.nPoints; l++){
+                    // e2
+                    unsigned int p2e1 = plane2.pids[l];
+                    unsigned int p2e2 = plane2.pids[(l+1)%plane2.nPoints];
+
+                    // if e1==e2
+                    if((p1e1==p2e1 && p1e2==p2e2 )||( p1e1==p2e2 && p1e2==p2e1)){
+                        // set neighbor of e1 to e2
+                        plane1.neigh[k] = j;
+                    }
+                }
+            }
+        }
+    }
 }
 
-// procedure for drawing the object - very simple
-void MyObject::draw(){
-    /*
-	ENTER CODE HERE (for problems 1,2,3)
-	draw the object using some GL_POLYGON s
-	Don't forget to use glColor3f and glNormalxx before drawing each polygon
-	consult MyObject struct (in 3dobject.h) to see how objects are structured
-    */
+void MyObject::draw()
+{
     // For each plane,
     for(int i=0; i<nPlanes; i++){
         // Get the plane object.
@@ -150,7 +163,6 @@ void MyObject::draw(){
         }
         glEnd();
     }
-
 }
 
 //calculates normal vector for all planes of the object using 3 of its vertices
@@ -163,12 +175,28 @@ void MyObject::calcNormals(){
 //calculate which planes of the object are lit
 //lp is in object coordinate system
 //set planes[i].islit for all planes of the object
-void MyObject::assessVisibility(float *lp){
-    /*
-	ENTER CODE HERE (for problem 3)
-	A plane is lit if dot product of its normal vector and
-	vector from an arbitrary point on the surface to light position is positive
-    */
+void MyObject::assessVisibility(float *lp)
+{
+    // For each plane,
+    for(int i=0; i<nPlanes; i++){
+        MyPlane& plane = planes[i];
+
+        // Make a copy of an arbitrary point.
+        MyPoint lightPosition;
+        // Set the fields properly.
+        lightPosition.x = lp[0];
+        lightPosition.y = lp[1];
+        lightPosition.z = lp[2];
+
+        // Get the dot product of the normal and the light position.
+        float dotProduct = plane.normal.dot(lightPosition);
+
+        if(dotProduct > 0){
+            plane.islit = true;
+        }else{
+            plane.islit = false;
+        }
+    }
 }
 
 /*

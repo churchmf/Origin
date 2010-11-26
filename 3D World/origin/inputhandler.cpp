@@ -190,5 +190,9 @@ void OriginWindow::keyPressEvent( QKeyEvent *e )
     case Qt::Key_Escape:
         exit(0);
         break;
+
+    case Qt::Key_O:
+        OriginWindow::loadLevel();
+        break;
     }
 }

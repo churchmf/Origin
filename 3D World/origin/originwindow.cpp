@@ -79,6 +79,7 @@ void OriginWindow::paintGL()
     glTranslatef(xtrans, ytrans, ztrans);
     glBindTexture(GL_TEXTURE_2D, texture[filter]);
 
+    // Draw the triangles.
     for( QList<Triangle>::const_iterator i=triangles.begin(); i!=triangles.end(); ++i )
     {
         glBegin(GL_TRIANGLES);
@@ -104,6 +105,36 @@ void OriginWindow::paintGL()
         v_m = (*i).vertex[2].v;
         glTexCoord2f(u_m,v_m); glVertex3f(x_m,y_m,z_m);
         glEnd();
+    }
+
+    // Draw the objects stored in scene.
+    for(int i=0; i<scene.objcount; i++)
+    {
+        // Get the object to draw.
+        MyObject& object = scene.obj[i];
+
+        // Get the position to draw it at.
+        MyPoint& position = object.position;
+
+        // Get the rotation to rotate the object by.
+        MyPoint& rotation = object.rotation;
+
+        // Make a copy of the current matrix on top of the stack.
+        glPushMatrix();
+
+        // Translate the origin to the point's position?
+        glTranslatef(position.x, position.y, position.z);
+
+        // Rotate the object.
+        glRotatef(-rotation.x, 1.0, 0.0, 0.0);
+        glRotatef(-rotation.y, 0.0, 1.0, 0.0);
+        glRotatef(-rotation.z, 0.0, 0.0, 1.0);
+
+        // Draw the object.
+        object.draw();
+
+        // Discard matrix changes.
+        glPopMatrix();
     }
 }
 
@@ -190,7 +221,8 @@ void OriginWindow::loadGLTextures()
 void OriginWindow::loadLevel()
 {
     // Get the fileName from a file picker.
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Level"), "", tr("Level Files (*.txt, *.lvl)"));
+    //tr("Level Files (*.txt, *.lvl)")
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Level"), "", "");
 
     // Will be "" if the user canceled the dialog.
     if(fileName == "")
@@ -255,5 +287,11 @@ void OriginWindow::loadLevel()
 
         // Set the object as casting a shadow.
         o.castsShadow = 1;
+
+        // Compute the connectivity of the edges of the object.
+        o.setConnectivity();
+
+        // Compute the normals for the object.
+        o.calcNormals();
     }
 }
