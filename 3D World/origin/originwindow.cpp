@@ -2,7 +2,6 @@
 
 OriginWindow::OriginWindow(QComboBox* transformationSelector, QTableWidget *transformationTable, QComboBox* rotationAxisSelector, QSpinBox* rotationAnglePicker, QWidget *parent) : QGLWidget(parent)
 {
-    setFormat(QGLFormat(QGL::DoubleBuffer|QGL::DepthBuffer|QGL::StencilBuffer));
     setFocusPolicy(Qt::StrongFocus);
 
     // Setup widget pointers
@@ -135,14 +134,22 @@ void OriginWindow::paintGL()
         glPopMatrix();
     }
 
+    //Draw Crosshair
+    drawCrosshair();
+}
+
+void OriginWindow::drawCrosshair()
+{
     // Crosshair (In Ortho View)					// Store The Projection Matrix
+    glPushMatrix();
     glLoadIdentity();							// Reset The Projection Matrix
     glOrtho(0,this->width(),0,this->height(),-1,1);			// Set Up An Ortho Screen
     glMatrixMode(GL_MODELVIEW);                                         // Select The Modelview Matrix
     glTranslatef(this->width()/2, this->height()/2, 1);                 // Move To The Middle of the screen
+
     // Draw The Crosshair
     glEnable(GL_BLEND);
-    glDisable(GL_DEPTH_TEST);
+    //glDisable(GL_DEPTH_TEST);
     glBindTexture(GL_TEXTURE_2D, texture[3]);                           // Select The Correct Texture
     glBegin(GL_QUADS);							// Start Drawing A Quad
     glTexCoord2f(0.0f,0.0f); glVertex3f(-8,-8,0.0f);                    // Bottom Left
@@ -152,7 +159,8 @@ void OriginWindow::paintGL()
     glEnd();
     // Done Drawing Quad
     glDisable(GL_BLEND);
-    glEnable(GL_DEPTH_TEST);
+    //glEnable(GL_DEPTH_TEST);
+    glPopMatrix();
 }
 
 void OriginWindow::loadTriangles()

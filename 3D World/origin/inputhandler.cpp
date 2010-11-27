@@ -188,24 +188,7 @@ void OriginWindow::keyPressEvent( QKeyEvent *e )
     int key = e->key();
     updateKeyState(key,true);
 
-    if (key == Qt::Key_B)
-    {
-        if (blend)
-        {
-            blend = false;
-            glDisable(GL_BLEND);
-            glEnable(GL_DEPTH_TEST);
-        }
-        else
-        {
-            blend = true;
-            glEnable(GL_BLEND);
-            glDisable(GL_DEPTH_TEST);
-        }
-
-        updateGL();
-    }
-    else if (key == Qt::Key_Escape)
+    if (key == Qt::Key_Escape)
     {
         exit(0);
     }

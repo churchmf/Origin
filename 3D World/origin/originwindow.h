@@ -80,7 +80,6 @@ private:
     QTableWidget* transformationTable;
     QComboBox* transformationSelector;
 
-    bool blend;
     GLfloat heading;
     GLfloat xpos;
     GLfloat zpos;
@@ -96,6 +95,8 @@ private:
     void loadTriangles();
     void loadGLTextures();
     void loadLevel();
+
+    void drawCrosshair();
 
     // Last mouse position
     QPoint lastPos;
