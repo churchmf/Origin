@@ -13,6 +13,8 @@
 #include "iostream"
 
 #define IO_ReadOnly QIODevice::ReadOnly
+#define MIN_WIDTH 800
+#define MIN_HEIGHT 600
 
 const float piover180 = 0.0174532925f;
 
@@ -89,14 +91,18 @@ private:
     GLfloat lookupdown;
 
     GLuint filter;
-    GLuint texture[4];
+    GLuint texture[5];
     QList<Triangle> triangles;
 
     void loadTriangles();
     void loadGLTextures();
+    void loadCrosshairTexture();
+    void loadAxisTexture();
     void loadLevel();
 
+    void drawHUD();
     void drawCrosshair();
+    void drawAxis();
 
     // Last mouse position
     QPoint lastPos;

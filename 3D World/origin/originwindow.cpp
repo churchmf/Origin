@@ -14,6 +14,9 @@ OriginWindow::OriginWindow(QComboBox* transformationSelector, QTableWidget *tran
     // enable mouse cursor tracking
     //setMouseTracking(true);
 
+    // Set minimum size for the window
+    this->setFixedSize(MIN_WIDTH, MIN_HEIGHT);
+
     //Initialization
     walkbias = 0;
     walkbiasangle = 0;
@@ -134,8 +137,126 @@ void OriginWindow::paintGL()
         glPopMatrix();
     }
 
+    //Draw the HUD
+    drawHUD();
+}
+
+void OriginWindow::drawHUD()
+{
+
+    //Draw 3D Axis
+    drawAxis();
+
     //Draw Crosshair
     drawCrosshair();
+
+}
+
+void OriginWindow::drawAxis()
+{
+    //1. Change viewport to cover only corner of a screen
+    //2. Reinitialize modelview and projection matrices - apply all rotations and perspective you need (do not apply any scaling or translation).
+    //3. Draw your axes around (0,0,0) point
+    //4. Restore viewport and matrices
+
+    /*
+    glPushMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(0,this->width(),0, this->height());
+    glTranslatef(0., 0., 0.);
+    glMatrixMode(GL_MODELVIEW);
+    double l = 32;
+    double cx = 16;
+    double cy = 16;
+    double xx, xy, yx, yy , zx, zy;
+    float fvViewMatrix[ 16 ];
+    glGetFloatv( GL_MODELVIEW_MATRIX, fvViewMatrix );
+    glLoadIdentity();
+    xx = l * fvViewMatrix[0];
+    xy = l * fvViewMatrix[1];
+    yx = l * fvViewMatrix[4];
+    yy = l * fvViewMatrix[5];
+    zx = l * fvViewMatrix[8];
+    zy = l * fvViewMatrix[9];
+    glLineWidth(2);
+    glBegin(GL_LINES);
+    glVertex2f(cx, cy);
+    glVertex2f(cx + xx, cy + xy);
+    glVertex2f(cx, cy);
+    glVertex2f(cx + yx, cy + yy);
+    glVertex2f(cx, cy);
+    glVertex2f(cx + zx, cy + zy);
+    glEnd();
+    glPopMatrix();
+    */
+
+    /*
+    glPushMatrix ();
+
+          glTranslatef (-2.4, -1.5, -5);
+          glRotatef(lookupdown,1.0f,0,0);
+          glRotatef(yrot,0,1.0f,0);
+          glScalef(0.25, 0.25, 0.25);
+
+          glLineWidth (2.0);
+
+          glBegin (GL_LINES);
+             glColor3f (1,0,0);  glVertex3f (0,0,0);  glVertex3f (1,0,0);    // X axis is red.
+             glColor3f (0,1,0);  glVertex3f (0,0,0);  glVertex3f (0,1,0);    // Y axis is green.
+             glColor3f (0,0,1);  glVertex3f (0,0,0);  glVertex3f (0,0,1);    // z axis is blue.
+          glEnd();
+
+      glPopMatrix ();
+      */
+
+    // Draw Axis
+    //glPushMatrix();
+    //glLoadIdentity();							// Reset The Projection Matrix
+    //gluOrtho2D(0,this->width(),0,this->height());			// Set Up An Ortho Screen
+    //glMatrixMode(GL_MODELVIEW);                                         // Select The Modelview Matrix
+    //glTranslatef(this->width()/2-20, this->height()/2-10, 0.1);     // Move To The corner of the screen
+
+    //GLfloat x_m, y_m, z_m, u_m, v_m;
+    //GLfloat xtrans = -xpos;
+    //GLfloat ztrans = -zpos;
+    //GLfloat ytrans = -walkbias-0.25f;
+    //GLfloat sceneroty = yrot;
+
+    //glTranslatef(-xtrans, -ytrans, -ztrans);
+
+    //glRotatef(lookupdown,1.0f,0,0);
+    //glRotatef(sceneroty,0,1.0f,0);
+
+    //glTranslatef(xtrans, ytrans, ztrans);
+    //glBegin(GL_LINES);
+    // Start Drawing A Quad
+    //glColor3f(1, 0, 0);
+    //glVertex3f(-2,-2,0.0f);                    // Bottom Left
+    //glVertex3f( 2,-2,0.0f);                    // Bottom Right
+    //glVertex3f( 2, 2,0.0f);                    // Top Right
+    //glVertex3f(-2, 2,0.0f);                    // Top Left
+    //glEnd();
+    // Done Drawing Quad
+    //glPopMatrix();
+
+    // Draw Background
+    /*
+    glPushMatrix();
+    glLoadIdentity();							// Reset The Projection Matrix
+    gluOrtho2D(0,this->width(),0,this->height());			// Set Up An Ortho Screen
+    glMatrixMode(GL_MODELVIEW);                                         // Select The Modelview Matrix
+    glTranslatef(this->width()/2 - 20.1, this->height()/2 - 11, 0.1);     // Move To The corner of the screen
+    glBindTexture(GL_TEXTURE_2D, texture[4]);                           // Select The Correct Texture
+    glBegin(GL_QUADS);							// Start Drawing A Quad
+    glTexCoord2f(0.0f,0.0f); glVertex3f(-2,-2,0.0f);                    // Bottom Left
+    glTexCoord2f(1.0f,0.0f); glVertex3f( 2,-2,0.0f);                    // Bottom Right
+    glTexCoord2f(1.0f,1.0f); glVertex3f( 2, 2,0.0f);                    // Top Right
+    glTexCoord2f(0.0f,1.0f); glVertex3f(-2, 2,0.0f);                    // Top Left
+    glEnd();
+    // Done Drawing Quad
+    glPopMatrix();
+    */
 }
 
 void OriginWindow::drawCrosshair()
@@ -145,17 +266,17 @@ void OriginWindow::drawCrosshair()
     glLoadIdentity();							// Reset The Projection Matrix
     glOrtho(0,this->width(),0,this->height(),-1,1);			// Set Up An Ortho Screen
     glMatrixMode(GL_MODELVIEW);                                         // Select The Modelview Matrix
-    glTranslatef(this->width()/2, this->height()/2, 1);                 // Move To The Middle of the screen
+    glTranslatef(this->width()/2, this->height()/2, 0.1);               // Move To The Middle of the screen
 
     // Draw The Crosshair
     glEnable(GL_BLEND);
     //glDisable(GL_DEPTH_TEST);
     glBindTexture(GL_TEXTURE_2D, texture[3]);                           // Select The Correct Texture
     glBegin(GL_QUADS);							// Start Drawing A Quad
-    glTexCoord2f(0.0f,0.0f); glVertex3f(-8,-8,0.0f);                    // Bottom Left
-    glTexCoord2f(1.0f,0.0f); glVertex3f( 8,-8,0.0f);                    // Bottom Right
-    glTexCoord2f(1.0f,1.0f); glVertex3f( 8, 8,0.0f);                    // Top Right
-    glTexCoord2f(0.0f,1.0f); glVertex3f(-8, 8,0.0f);                    // Top Left
+    glTexCoord2f(0.0f,0.0f); glVertex3f(-1,-1,0.0f);                    // Bottom Left
+    glTexCoord2f(1.0f,0.0f); glVertex3f( 1,-1,0.0f);                    // Bottom Right
+    glTexCoord2f(1.0f,1.0f); glVertex3f( 1, 1,0.0f);                    // Top Right
+    glTexCoord2f(0.0f,1.0f); glVertex3f(-1, 1,0.0f);                    // Top Left
     glEnd();
     // Done Drawing Quad
     glDisable(GL_BLEND);
@@ -218,14 +339,14 @@ void OriginWindow::loadGLTextures()
     QImage t;
     QImage b;
 
-    if ( !b.load( "../images/mud.bmp" ) )
+    if ( !b.load( "../images/brick.bmp" ) )
     {
         b = QImage( 16, 16, QImage::Format_Mono);
         b.fill( Qt::green );
     }
 
     t = QGLWidget::convertToGLFormat( b );
-    glGenTextures( 3, &texture[0] );
+    glGenTextures( 4, &texture[0] );
 
     glBindTexture( GL_TEXTURE_2D, texture[0] );
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
@@ -242,6 +363,15 @@ void OriginWindow::loadGLTextures()
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_NEAREST);
     gluBuild2DMipmaps(GL_TEXTURE_2D, 3, t.width(), t.height(), GL_RGBA, GL_UNSIGNED_BYTE, t.bits());
 
+    loadCrosshairTexture();
+    loadAxisTexture();
+}
+
+void OriginWindow::loadCrosshairTexture()
+{
+    QImage t;
+    QImage b;
+
     //Crosshair texture
     if ( !b.load( "../images/crosshair.bmp" ) )
     {
@@ -254,6 +384,27 @@ void OriginWindow::loadGLTextures()
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     glTexImage2D( GL_TEXTURE_2D, 0, 3, t.width(), t.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, t.bits() );
+
+}
+
+void OriginWindow::loadAxisTexture()
+{
+    QImage t;
+    QImage b;
+
+    //Axis texture
+    if ( !b.load( "../images/axis.bmp" ) )
+    {
+        b = QImage( 16, 16, QImage::Format_Mono);
+        b.fill( Qt::green );
+    }
+
+    t = QGLWidget::convertToGLFormat( b );
+    glBindTexture( GL_TEXTURE_2D, texture[4] );
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    glTexImage2D( GL_TEXTURE_2D, 0, 3, t.width(), t.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, t.bits() );
+
 }
 
 void OriginWindow::loadLevel()
