@@ -15,6 +15,7 @@
 #define IO_ReadOnly QIODevice::ReadOnly
 #define MIN_WIDTH 800
 #define MIN_HEIGHT 600
+#define MAX_TEXTURES 15
 
 const float piover180 = 0.0174532925f;
 
@@ -79,16 +80,14 @@ private:
     GLfloat lookupdown;
 
     GLuint filter;
-    GLuint texture[5];
-
-    void loadGLTextures();
-    void loadCrosshairTexture();
-    void loadAxisTexture();
+    GLuint texture[MAX_TEXTURES];
+    int textureCount;
 
     void loadLevel();
 
     void readObject(QFile* file, MyObject& o);  //read .obj file
-    void readMaterial(QFile* file, MyObject& o);    //read .mtl file for .obj
+    void readMaterial(QFile* file, MyObject& o);    //read .mtl file for .obj file
+    GLuint& readTexture(QString fileLocation);    //read texture from .mtl file, returns the index of the texture
 
     void drawHUD();
     void drawCrosshair();

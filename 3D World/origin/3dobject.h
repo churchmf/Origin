@@ -56,7 +56,7 @@ struct MyMaterial{
     QColor ks; //specular color of the material
     float alpha; //transparency of the material to be alpha
     float s; //shininess of the material
-    //TODO Get texture
+    GLuint texture; //material's texture
 };
 
 // object structure

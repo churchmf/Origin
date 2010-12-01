@@ -74,43 +74,52 @@ void OriginWindow::loadLevel()
 
 void OriginWindow::readMaterial(QFile* file, MyObject &o)
 {
-     QTextStream in(file);
-     QString line = in.readLine();
-     while (line != NULL)
-     {
-         if (line.startsWith("Ka"))
-         {
-             QStringList colour = line.split(" ");
-             o.material.ka.setRed(((QString)colour[1]).toInt());
-             o.material.ka.setGreen(((QString)colour[2]).toInt());
-             o.material.ka.setBlue(((QString)colour[3]).toInt());
-         }
-         else if (line.startsWith("Kd"))
-         {
-             QStringList colour = line.split(" ");
-             o.material.kd.setRed(((QString)colour[1]).toFloat());
-             o.material.kd.setGreen(((QString)colour[2]).toFloat());
-             o.material.kd.setBlue(((QString)colour[3]).toFloat());
-         }
-         else if (line.startsWith("Ks"))
-         {
-             QStringList colour = line.split(" ");
-             o.material.ks.setRed(((QString)colour[1]).toInt());
-             o.material.ks.setGreen(((QString)colour[2]).toInt());
-             o.material.ks.setBlue(((QString)colour[3]).toInt());
-         }
-         else if (line.startsWith("d") || line.startsWith("Tr"))
-         {
-             QStringList alpha = line.split(" ");
-             o.material.alpha = ((QString)alpha[1]).toFloat();
-         }
-         else if (line.startsWith("Ns"))
-         {
-             QStringList shininess = line.split(" ");
-             o.material.s = ((QString)shininess[1]).toFloat();
-         }
-         line = in.readLine();
-     }
+    QTextStream in(file);
+    QString line = in.readLine();
+    while (line != NULL)
+    {
+        if (line.startsWith("Ka"))
+        {
+            QStringList colour = line.split(" ");
+            o.material.ka.setRed(((QString)colour[1]).toInt());
+            o.material.ka.setGreen(((QString)colour[2]).toInt());
+            o.material.ka.setBlue(((QString)colour[3]).toInt());
+        }
+        else if (line.startsWith("Kd"))
+        {
+            QStringList colour = line.split(" ");
+            o.material.kd.setRed(((QString)colour[1]).toFloat());
+            o.material.kd.setGreen(((QString)colour[2]).toFloat());
+            o.material.kd.setBlue(((QString)colour[3]).toFloat());
+        }
+        else if (line.startsWith("Ks"))
+        {
+            QStringList colour = line.split(" ");
+            o.material.ks.setRed(((QString)colour[1]).toInt());
+            o.material.ks.setGreen(((QString)colour[2]).toInt());
+            o.material.ks.setBlue(((QString)colour[3]).toInt());
+        }
+        else if (line.startsWith("d") || line.startsWith("Tr"))
+        {
+            QStringList alpha = line.split(" ");
+            o.material.alpha = ((QString)alpha[1]).toFloat();
+        }
+        else if (line.startsWith("Ns"))
+        {
+            QStringList shininess = line.split(" ");
+            o.material.s = ((QString)shininess[1]).toFloat();
+        }
+        else if (line.startsWith("map_Kd"))
+        {
+            //currently only supporting .bmp
+            QStringList texture = line.split(" ");
+            QString textureLocation = "../images/" + ((QString)texture[1]) + ".bmp";
+
+            //set the object's material's texture to texture we are loading in
+            o.material.texture = this->readTexture(textureLocation);
+        }
+        line = in.readLine();
+    }
 }
 
 //This does all of the .obj file reading. Currently supports reading in of normals, vertices, and faces
@@ -191,11 +200,9 @@ void OriginWindow::readObject(QFile* file, MyObject& o)
                 }
                 if (!theNormal.isEmpty())
                 {
-                    //normal
+                    //normal TODO Fix this (points have normals not planes)
                     aPlane.normal = o.normals[theNormal.toInt()];
                 }
-                //TODO Read colour information/texture information
-                aPlane.color.x = 1;
                 planePointNum++;
             }
             aPlane.nPoints = planePointNum;
@@ -214,75 +221,24 @@ void OriginWindow::readObject(QFile* file, MyObject& o)
     o.setConnectivity();
 }
 
-void OriginWindow::loadGLTextures()
+GLuint& OriginWindow::readTexture(QString textureLocation)
 {
     QImage t;
     QImage b;
 
-    if ( !b.load( "../images/brick.bmp" ) )
+    if ( !b.load( textureLocation ) )
     {
         b = QImage( 16, 16, QImage::Format_Mono);
         b.fill( Qt::green );
     }
 
     t = QGLWidget::convertToGLFormat( b );
-    glGenTextures( 4, &texture[0] );
 
-    glBindTexture( GL_TEXTURE_2D, texture[0] );
+    glBindTexture( GL_TEXTURE_2D, texture[textureCount] );
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
     glTexImage2D( GL_TEXTURE_2D, 0, 3, t.width(), t.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, t.bits() );
 
-    glBindTexture(GL_TEXTURE_2D, texture[1]);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-    glTexImage2D( GL_TEXTURE_2D, 0, 3, t.width(), t.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, t.bits() );
-
-    glBindTexture(GL_TEXTURE_2D, texture[2]);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_NEAREST);
-    gluBuild2DMipmaps(GL_TEXTURE_2D, 3, t.width(), t.height(), GL_RGBA, GL_UNSIGNED_BYTE, t.bits());
-
-    loadCrosshairTexture();
-    loadAxisTexture();
-}
-
-void OriginWindow::loadCrosshairTexture()
-{
-    QImage t;
-    QImage b;
-
-    //Crosshair texture
-    if ( !b.load( "../images/crosshair.bmp" ) )
-    {
-        b = QImage( 16, 16, QImage::Format_Mono);
-        b.fill( Qt::green );
-    }
-
-    t = QGLWidget::convertToGLFormat( b );
-    glBindTexture( GL_TEXTURE_2D, texture[3] );
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-    glTexImage2D( GL_TEXTURE_2D, 0, 3, t.width(), t.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, t.bits() );
-
-}
-
-void OriginWindow::loadAxisTexture()
-{
-    QImage t;
-    QImage b;
-
-    //Axis texture
-    if ( !b.load( "../images/axis.bmp" ) )
-    {
-        b = QImage( 16, 16, QImage::Format_Mono);
-        b.fill( Qt::green );
-    }
-
-    t = QGLWidget::convertToGLFormat( b );
-    glBindTexture( GL_TEXTURE_2D, texture[4] );
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-    glTexImage2D( GL_TEXTURE_2D, 0, 3, t.width(), t.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, t.bits() );
-
+    textureCount++;
+    return texture[textureCount-1];
 }

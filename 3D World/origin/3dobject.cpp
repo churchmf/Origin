@@ -139,8 +139,11 @@ void MyObject::setConnectivity()
 
 void MyObject::draw()
 {
+    //Bind the texture
+    glBindTexture(GL_TEXTURE_2D, this->material.texture);
+
     // Get the object's colour from it's material
-    glColor3f(this->material.kd.red(),this->material.kd.green(),this->material.kd.blue());
+    //glColor3f(this->material.kd.red(),this->material.kd.green(),this->material.kd.blue());
 
     // For each plane,
     for(int i=0; i<nPlanes; i++){
@@ -159,6 +162,10 @@ void MyObject::draw()
         for(int j=0; j<plane.nPoints; j++){
             // Get the vertex.
             MyPoint point = points[plane.pids[j]];
+
+            // Make the texture coordinates
+            glTexCoord2f(point.u,point.v);
+
             // Add it to the polygon.
             glVertex3f(point.x, point.y, point.z);
         }

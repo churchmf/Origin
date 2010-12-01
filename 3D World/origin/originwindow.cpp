@@ -31,8 +31,15 @@ OriginWindow::OriginWindow(QComboBox* transformationSelector, QTableWidget *tran
 
 void OriginWindow::initializeGL()
 {
-    loadGLTextures();
-    //loadTriangles();
+    // Generate texture names
+    this->textureCount = 0;
+    glGenTextures( MAX_TEXTURES, &texture[0] );
+
+    // Load in the HUD textures
+    QString crosshairTexture = "../images/crosshair.bmp";
+    this->readTexture(crosshairTexture);
+     QString axisTexture = "../images/axis.bmp";
+    this->readTexture(axisTexture);
 
     glEnable(GL_TEXTURE_2D);
     glBlendFunc(GL_SRC_ALPHA,GL_ONE);
@@ -273,7 +280,7 @@ void OriginWindow::drawCrosshair()
     // Draw The Crosshair
     glEnable(GL_BLEND);
     //glDisable(GL_DEPTH_TEST);
-    glBindTexture(GL_TEXTURE_2D, texture[3]);                           // Select The Correct Texture
+    glBindTexture(GL_TEXTURE_2D, texture[0]);                           // Select The Correct Texture
     glBegin(GL_QUADS);							// Start Drawing A Quad
     glTexCoord2f(0.0f,0.0f); glVertex3f(-1,-1,0.0f);                    // Bottom Left
     glTexCoord2f(1.0f,0.0f); glVertex3f( 1,-1,0.0f);                    // Bottom Right
