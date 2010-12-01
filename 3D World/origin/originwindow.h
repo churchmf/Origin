@@ -26,18 +26,6 @@ typedef struct {
     bool w,a,s,d,space,e;
 } KeyState;
 
-typedef struct {
-    GLfloat x,y,z;
-} Vector3;
-
-typedef struct {
-    GLfloat x, y, z, u, v;
-} Vertex;
-
-typedef struct {
-    Vertex vertex[3];
-} Triangle;
-
 class OriginWindow : public QGLWidget
 {
     Q_OBJECT
@@ -92,13 +80,15 @@ private:
 
     GLuint filter;
     GLuint texture[5];
-    QList<Triangle> triangles;
 
-    void loadTriangles();
     void loadGLTextures();
     void loadCrosshairTexture();
     void loadAxisTexture();
+
     void loadLevel();
+
+    void readObject(QFile* file, MyObject& o);  //read .obj file
+    void readMaterial(QFile* file, MyObject& o);    //read .mtl file for .obj
 
     void drawHUD();
     void drawCrosshair();

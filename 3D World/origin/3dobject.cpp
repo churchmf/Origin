@@ -101,37 +101,6 @@ void MyObject::print(){
     }
 }
 
-// load object from file
-int MyObject::ReadObject(char *st, MyObject *o){
-//    FILE *file;
-//    unsigned int i,j;
-
-//    file = fopen(st, "r");
-//    if (!file) return false;
-//    //points
-//    fscanf(file, "%d", &(o->nPoints));
-//    for (i=1;i<=o->nPoints;i++){
-//	fscanf(file, "%f", &(o->points[i].x));
-//	fscanf(file, "%f", &(o->points[i].y));
-//	fscanf(file, "%f", &(o->points[i].z));
-//    }
-//    //planes
-//    fscanf(file, "%d", &(o->nPlanes));
-//    for (i=0;i<o->nPlanes;i++){
-//	fscanf(file, "%d", &(o->planes[i].nPoints));
-//	//read vertices
-//	for(j=0; j<o->planes[i].nPoints; j++){
-//	    fscanf(file, "%d", &(o->planes[i].pids[j]));
-//	}
-//	fscanf(file, "%f", &(o->planes[i].color.x));
-//	fscanf(file, "%f", &(o->planes[i].color.y));
-//	fscanf(file, "%f", &(o->planes[i].color.z));
-//    }
-//    o->castsShadow=1;
-//    //o->print();
-//    return true;
-}
-
 // set neighbors of each plane
 // planes[i].neigh[j] should be set to index of neighbor with which plane i shares the edge
 // between its jth th and j+1th vertices.
@@ -170,13 +139,16 @@ void MyObject::setConnectivity()
 
 void MyObject::draw()
 {
+    // Get the object's colour from it's material
+    glColor3f(this->material.kd.red(),this->material.kd.green(),this->material.kd.blue());
+
     // For each plane,
     for(int i=0; i<nPlanes; i++){
         // Get the plane object.
         MyPlane plane = planes[i];
 
         // Set the colour of the plane to the MyPoint called Color...
-        glColor3f(plane.color.x, plane.color.y, plane.color.z);
+        //glColor3f(plane.color.x, plane.color.y, plane.color.z);
 
         // Set the normal?
         glNormal3f(plane.normal.x, plane.normal.y, plane.normal.z);

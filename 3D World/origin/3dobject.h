@@ -8,8 +8,9 @@ This file is borrowed from Assignment3 of CMPUT411 at the University of Alberta.
 #include <qgl.h>
 
 //Constants
-#define MAX_OBJECT_POINTS 800
-#define MAX_OBJECT_PLANES 800
+#define MAX_OBJECT_POINTS 100
+#define MAX_OBJECT_PLANES 100
+#define MAX_OBJECT_NORMALS 100
 #define MAX_PLANE_POINTS 10
 #define PROP_TRANSFORM_STEP 1.0f
 #define PROP_ROTATE_STEP 1.0f
@@ -25,7 +26,7 @@ void VMatMult(GLmatrix16f M, GLvector4f v);
 // point/vector in 3d-coordinate system
 struct MyPoint{
     //fields
-	float x, y, z;
+        float x, y, z, u, v;
     //methods
         MyPoint cross(MyPoint op2);
         MyPoint minus(MyPoint op2);
@@ -48,6 +49,16 @@ struct MyPlane{
         bool islit;					//is it facing the light?
 };
 
+struct MyMaterial{
+    //fields
+    QColor ka; //ambient color of the material
+    QColor kd; //diffuse color of the material
+    QColor ks; //specular color of the material
+    float alpha; //transparency of the material to be alpha
+    float s; //shininess of the material
+    //TODO Get texture
+};
+
 // object structure
 struct MyObject{
     //fields
@@ -55,15 +66,18 @@ struct MyObject{
         unsigned int nPoints;				//number of vertices that make up this object
         MyPoint points[MAX_OBJECT_POINTS];		//points
         MyPlane planes[MAX_OBJECT_PLANES];		//surfaces
+        MyPoint normals[MAX_OBJECT_NORMALS];            //normals
+        MyPoint textureCoords[MAX_OBJECT_POINTS];       //textureCoords
 
         MyPoint position;				//location
         MyPoint goalPosition;                           //goal position
         MyPoint goalRotation;                           //goal rotation
         MyPoint rotation;				//rotation around (x,y,z) axes
 
+        MyMaterial material;                            //object's material
+
         bool castsShadow;				//does it cast a shadow?
     //methods
-        static int ReadObject(char *st, MyObject *o);	//Loads an object from file
         void assessVisibility(float *lp);		//decide which planes of the object are lit
         void castShadow(float *lp);			//generate shadow quads
         void renderShadow(float *lp);			//draw shadows using stencil buffer and castShadow

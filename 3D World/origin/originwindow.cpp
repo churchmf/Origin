@@ -32,7 +32,7 @@ OriginWindow::OriginWindow(QComboBox* transformationSelector, QTableWidget *tran
 void OriginWindow::initializeGL()
 {
     loadGLTextures();
-    loadTriangles();
+    //loadTriangles();
 
     glEnable(GL_TEXTURE_2D);
     glBlendFunc(GL_SRC_ALPHA,GL_ONE);
@@ -67,7 +67,6 @@ void OriginWindow::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
 
-    GLfloat x_m, y_m, z_m, u_m, v_m;
     GLfloat xtrans = -xpos;
     GLfloat ztrans = -zpos;
     GLfloat ytrans = -walkbias-0.25f;
@@ -78,34 +77,6 @@ void OriginWindow::paintGL()
 
     glTranslatef(xtrans, ytrans, ztrans);
     glBindTexture(GL_TEXTURE_2D, texture[filter]);
-
-    // Draw the triangles.
-    for( QList<Triangle>::const_iterator i=triangles.begin(); i!=triangles.end(); ++i )
-    {
-        glBegin(GL_TRIANGLES);
-        glNormal3f( 0.0f, 0.0f, 1.0f);
-        x_m = (*i).vertex[0].x;
-        y_m = (*i).vertex[0].y;
-        z_m = (*i).vertex[0].z;
-        u_m = (*i).vertex[0].u;
-        v_m = (*i).vertex[0].v;
-        glTexCoord2f(u_m,v_m); glVertex3f(x_m,y_m,z_m);
-
-        x_m = (*i).vertex[1].x;
-        y_m = (*i).vertex[1].y;
-        z_m = (*i).vertex[1].z;
-        u_m = (*i).vertex[1].u;
-        v_m = (*i).vertex[1].v;
-        glTexCoord2f(u_m,v_m); glVertex3f(x_m,y_m,z_m);
-
-        x_m = (*i).vertex[2].x;
-        y_m = (*i).vertex[2].y;
-        z_m = (*i).vertex[2].z;
-        u_m = (*i).vertex[2].u;
-        v_m = (*i).vertex[2].v;
-        glTexCoord2f(u_m,v_m); glVertex3f(x_m,y_m,z_m);
-        glEnd();
-    }
 
     // Draw the objects stored in scene.
     for(int i=0; i<scene.objcount; i++)
@@ -137,19 +108,47 @@ void OriginWindow::paintGL()
         glPopMatrix();
     }
 
+    // Draw the props stored in scene.
+    for(int i=0; i<scene.propcount; i++)
+    {
+        // Get the object to draw.
+        MyObject& object = scene.prop[i];
+
+        // Get the position to draw it at.
+        MyPoint& position = object.position;
+
+        // Get the rotation to rotate the object by.
+        MyPoint& rotation = object.rotation;
+
+        // Make a copy of the current matrix on top of the stack.
+        glPushMatrix();
+
+        // Translate the origin to the point's position?
+        glTranslatef(position.x, position.y, position.z);
+
+        // Rotate the object
+        glRotatef(-rotation.x, 1.0, 0.0, 0.0);
+        glRotatef(-rotation.y, 0.0, 1.0, 0.0);
+        glRotatef(-rotation.z, 0.0, 0.0, 1.0);
+
+        // Draw the object.
+        object.draw();
+
+        // Discard matrix changes.
+        glPopMatrix();
+    }
+
     //Draw the HUD
     drawHUD();
 }
 
 void OriginWindow::drawHUD()
 {
-
     //Draw 3D Axis
     drawAxis();
 
     //Draw Crosshair
     drawCrosshair();
-
 }
 
 void OriginWindow::drawAxis()
@@ -159,6 +158,7 @@ void OriginWindow::drawAxis()
     //3. Draw your axes around (0,0,0) point
     //4. Restore viewport and matrices
 
+    //attempt1
     /*
     glPushMatrix();
     glMatrixMode(GL_PROJECTION);
@@ -191,6 +191,7 @@ void OriginWindow::drawAxis()
     glPopMatrix();
     */
 
+    //attempt 2
     /*
     glPushMatrix ();
 
@@ -210,6 +211,7 @@ void OriginWindow::drawAxis()
       glPopMatrix ();
       */
 
+    //attempt 3
     // Draw Axis
     //glPushMatrix();
     //glLoadIdentity();							// Reset The Projection Matrix
@@ -282,207 +284,6 @@ void OriginWindow::drawCrosshair()
     glDisable(GL_BLEND);
     //glEnable(GL_DEPTH_TEST);
     glPopMatrix();
-}
-
-void OriginWindow::loadTriangles()
-{
-    QFile f( "../world/world.txt" );
-
-    if( f.open( IO_ReadOnly ) )
-    {
-        QTextStream ts( &f );
-
-        Vertex v[3];
-        int vcount = 0;
-        bool allok, ok;
-
-        while( !ts.atEnd() )
-        {
-            QStringList line = ts.readLine().trimmed().split(" ", QString::SkipEmptyParts);
-
-            if( line.count() == 5 )
-            {
-                allok = true;
-                v[vcount].x = line[0].toFloat( &ok );
-                allok &= ok;
-                v[vcount].y = line[1].toFloat( &ok );
-                allok &= ok;
-                v[vcount].z = line[2].toFloat( &ok );
-                allok &= ok;
-                v[vcount].u = line[3].toFloat( &ok );
-                allok &= ok;
-                v[vcount].v = line[4].toFloat( &ok );
-                allok &= ok;
-
-                if( allok )
-                    vcount++;
-
-                if( vcount == 3 )
-                {
-                    vcount = 0;
-                    Triangle t;
-                    t.vertex[0] = v[0];
-                    t.vertex[1] = v[1];
-                    t.vertex[2] = v[2];
-
-                    triangles.append( t );
-                }
-            }
-        }
-
-        f.close();
-    }
-}
-
-void OriginWindow::loadGLTextures()
-{
-    QImage t;
-    QImage b;
-
-    if ( !b.load( "../images/brick.bmp" ) )
-    {
-        b = QImage( 16, 16, QImage::Format_Mono);
-        b.fill( Qt::green );
-    }
-
-    t = QGLWidget::convertToGLFormat( b );
-    glGenTextures( 4, &texture[0] );
-
-    glBindTexture( GL_TEXTURE_2D, texture[0] );
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-    glTexImage2D( GL_TEXTURE_2D, 0, 3, t.width(), t.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, t.bits() );
-
-    glBindTexture(GL_TEXTURE_2D, texture[1]);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-    glTexImage2D( GL_TEXTURE_2D, 0, 3, t.width(), t.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, t.bits() );
-
-    glBindTexture(GL_TEXTURE_2D, texture[2]);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_NEAREST);
-    gluBuild2DMipmaps(GL_TEXTURE_2D, 3, t.width(), t.height(), GL_RGBA, GL_UNSIGNED_BYTE, t.bits());
-
-    loadCrosshairTexture();
-    loadAxisTexture();
-}
-
-void OriginWindow::loadCrosshairTexture()
-{
-    QImage t;
-    QImage b;
-
-    //Crosshair texture
-    if ( !b.load( "../images/crosshair.bmp" ) )
-    {
-        b = QImage( 16, 16, QImage::Format_Mono);
-        b.fill( Qt::green );
-    }
-
-    t = QGLWidget::convertToGLFormat( b );
-    glBindTexture( GL_TEXTURE_2D, texture[3] );
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-    glTexImage2D( GL_TEXTURE_2D, 0, 3, t.width(), t.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, t.bits() );
-
-}
-
-void OriginWindow::loadAxisTexture()
-{
-    QImage t;
-    QImage b;
-
-    //Axis texture
-    if ( !b.load( "../images/axis.bmp" ) )
-    {
-        b = QImage( 16, 16, QImage::Format_Mono);
-        b.fill( Qt::green );
-    }
-
-    t = QGLWidget::convertToGLFormat( b );
-    glBindTexture( GL_TEXTURE_2D, texture[4] );
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-    glTexImage2D( GL_TEXTURE_2D, 0, 3, t.width(), t.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, t.bits() );
-
-}
-
-void OriginWindow::loadLevel()
-{
-    // Get the fileName from a file picker.
-    //tr("Level Files (*.txt, *.lvl)")
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Level"), "", "");
-
-    // Will be "" if the user canceled the dialog.
-    if(fileName == "")
-    {
-        printf("Dialog window was canceled.\n");
-        return;
-    }
-    // Create the file.
-    QFile file(fileName);
-
-    // Stop if the file cannot be opened in ReadOnly or Text mode.
-    if(!file.open(QIODevice::ReadOnly | QIODevice::Text))
-    {
-        printf("Couldn't open the file.\n");
-        if(!file.exists())
-            printf("File doesn't exist.\n");
-        return;
-    }
-    // Create the input stream.
-    QTextStream in(&file);
-
-    // Get the number of objects in the scene. 0 if not an int.
-    in >> scene.objcount;
-
-    // For each object stored in the file,
-    for(int i=0; i<scene.objcount; i++)
-    {
-        // Create a reference to the object.
-        MyObject& o = scene.obj[i];
-
-        // Read in the number of points.
-        in >> o.nPoints;
-
-        // For each point,
-        for(unsigned int j=0; j<o.nPoints; j++){
-            // Read in the location.
-            in >> o.points[j].x;
-            in >> o.points[j].y;
-            in >> o.points[j].z;
-        }
-
-        // Read in the number of planes.
-        in >> o.nPlanes;
-
-        // For each plane,
-        for(unsigned int j=0; j<o.nPlanes; j++)
-        {
-            // Read in the number of points on the plane.
-            in >> o.planes[j].nPoints;
-
-            // For each point,
-            for(unsigned int k=0; k<o.planes[j].nPoints; k++)
-            {
-                in >> o.planes[j].pids[k];
-            }
-
-            // Read in the plane's colour information.
-            in >> o.planes[j].color.x;
-            in >> o.planes[j].color.y;
-            in >> o.planes[j].color.z;
-        }
-
-        // Set the object as casting a shadow.
-        o.castsShadow = 1;
-
-        // Compute the connectivity of the edges of the object.
-        o.setConnectivity();
-
-        // Compute the normals for the object.
-        o.calcNormals();
-    }
 }
 
 void OriginWindow::updatePlayerPosition()
