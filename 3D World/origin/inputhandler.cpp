@@ -181,6 +181,10 @@ void OriginWindow::updateKeyState(int key, bool isPressed)
     {
         keysPressed.space = isPressed;
     }
+    else if (key == Qt::Key_E)
+    {
+        keysPressed.e = isPressed;
+    }
 }
 
 void OriginWindow::keyPressEvent( QKeyEvent *e )
@@ -195,14 +199,5 @@ void OriginWindow::keyPressEvent( QKeyEvent *e )
     else if (key == Qt::Key_O)
     {
         OriginWindow::loadLevel();
-    }
-
-    else if (key == Qt::Key_F)
-    {
-        filter++;
-        if( filter > 2 )
-            filter = 0;
-
-        updateGL();
     }
 }

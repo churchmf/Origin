@@ -79,7 +79,6 @@ private:
     GLfloat walkbiasangle;
     GLfloat lookupdown;
 
-    GLuint filter;
     GLuint texture[MAX_TEXTURES];
     int textureCount;
 

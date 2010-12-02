@@ -21,7 +21,6 @@ OriginWindow::OriginWindow(QComboBox* transformationSelector, QTableWidget *tran
     walkbias = 0;
     walkbiasangle = 0;
     lookupdown = 0;
-    filter = 0;
     lastPos = QPoint();
     keysPressed = KeyState();
     timer = new QTimer(this);
@@ -83,7 +82,6 @@ void OriginWindow::paintGL()
     glRotatef(sceneroty,0,1.0f,0);
 
     glTranslatef(xtrans, ytrans, ztrans);
-    glBindTexture(GL_TEXTURE_2D, texture[filter]);
 
     // Draw the objects stored in scene.
     for(int i=0; i<scene.objcount; i++)
@@ -151,31 +149,51 @@ void OriginWindow::paintGL()
 
 void OriginWindow::drawHUD()
 {
-    //Draw 3D Axis
-    drawAxis();
-
     //Draw Crosshair
     drawCrosshair();
+
+    //Draw 3D Axis
+    drawAxis();
 }
 
 void OriginWindow::drawAxis()
 {
+
+    /*
+    // Draw Background
+    glPushMatrix();
+    glLoadIdentity();							// Reset The Projection Matrix
+    gluOrtho2D(0,this->width(),0,this->height());			// Set Up An Ortho Screen
+    glMatrixMode(GL_MODELVIEW);                                         // Select The Modelview Matrix
+    glTranslatef(this->width()/2 - 20.1, this->height()/2 - 11, 0.1);     // Move To The corner of the screen
+    glBindTexture(GL_TEXTURE_2D, texture[1]);                           // Select The Correct Texture
+    glBegin(GL_QUADS);							// Start Drawing A Quad
+    glTexCoord2f(0.0f,0.0f); glVertex3f(-2,-2,0.0f);                    // Bottom Left
+    glTexCoord2f(1.0f,0.0f); glVertex3f( 2,-2,0.0f);                    // Bottom Right
+    glTexCoord2f(1.0f,1.0f); glVertex3f( 2, 2,0.0f);                    // Top Right
+    glTexCoord2f(0.0f,1.0f); glVertex3f(-2, 2,0.0f);                    // Top Left
+    glEnd();
+    // Done Drawing Quad
+    glPopMatrix();
+    */
+
     //1. Change viewport to cover only corner of a screen
     //2. Reinitialize modelview and projection matrices - apply all rotations and perspective you need (do not apply any scaling or translation).
     //3. Draw your axes around (0,0,0) point
     //4. Restore viewport and matrices
 
     //attempt1
-    /*
-    glPushMatrix();
+
+
     glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
     glLoadIdentity();
     gluOrtho2D(0,this->width(),0, this->height());
-    glTranslatef(0., 0., 0.);
     glMatrixMode(GL_MODELVIEW);
-    double l = 32;
-    double cx = 16;
-    double cy = 16;
+    glPushMatrix();
+    double l = 24;
+    double cx = 32;
+    double cy = 32;
     double xx, xy, yx, yy , zx, zy;
     float fvViewMatrix[ 16 ];
     glGetFloatv( GL_MODELVIEW_MATRIX, fvViewMatrix );
@@ -189,14 +207,18 @@ void OriginWindow::drawAxis()
     glLineWidth(2);
     glBegin(GL_LINES);
     glVertex2f(cx, cy);
-    glVertex2f(cx + xx, cy + xy);
+    glVertex2f(cx - xx, cy - xy);
     glVertex2f(cx, cy);
     glVertex2f(cx + yx, cy + yy);
     glVertex2f(cx, cy);
-    glVertex2f(cx + zx, cy + zy);
+    glVertex2f(cx - zx, cy - zy);
     glEnd();
+    glMatrixMode(GL_PROJECTION);
     glPopMatrix();
-    */
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+
+
 
     //attempt 2
     /*
@@ -248,24 +270,6 @@ void OriginWindow::drawAxis()
     //glEnd();
     // Done Drawing Quad
     //glPopMatrix();
-
-    // Draw Background
-    /*
-    glPushMatrix();
-    glLoadIdentity();							// Reset The Projection Matrix
-    gluOrtho2D(0,this->width(),0,this->height());			// Set Up An Ortho Screen
-    glMatrixMode(GL_MODELVIEW);                                         // Select The Modelview Matrix
-    glTranslatef(this->width()/2 - 20.1, this->height()/2 - 11, 0.1);     // Move To The corner of the screen
-    glBindTexture(GL_TEXTURE_2D, texture[4]);                           // Select The Correct Texture
-    glBegin(GL_QUADS);							// Start Drawing A Quad
-    glTexCoord2f(0.0f,0.0f); glVertex3f(-2,-2,0.0f);                    // Bottom Left
-    glTexCoord2f(1.0f,0.0f); glVertex3f( 2,-2,0.0f);                    // Bottom Right
-    glTexCoord2f(1.0f,1.0f); glVertex3f( 2, 2,0.0f);                    // Top Right
-    glTexCoord2f(0.0f,1.0f); glVertex3f(-2, 2,0.0f);                    // Top Left
-    glEnd();
-    // Done Drawing Quad
-    glPopMatrix();
-    */
 }
 
 void OriginWindow::drawCrosshair()
