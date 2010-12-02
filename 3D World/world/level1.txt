@@ -1,0 +1,5 @@
+2
+1
+objects/room.obj
+objects/bigbox.obj
+objects/cube.obj

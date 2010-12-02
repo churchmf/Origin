@@ -5,6 +5,11 @@
 //NUMBER_OF_PROPS
 //OBJECTS_BY_RELATIVE_FILE_NAME
 //PROPS_BY_RELATIVE_FILE_NAME
+/*example:
+    1
+    0
+    objects/room.obj
+ */
 void OriginWindow::loadLevel()
 {
     // Get the fileName from a file picker.
@@ -111,9 +116,8 @@ void OriginWindow::readMaterial(QFile* file, MyObject &o)
         }
         else if (line.startsWith("map_Kd"))
         {
-            //currently only supporting .bmp
             QStringList texture = line.split(" ");
-            QString textureLocation = "../images/" + ((QString)texture[1]) + ".bmp";
+            QString textureLocation = "../images/" + ((QString)texture[1]);
 
             //set the object's material's texture to texture we are loading in
             o.material.texture = this->readTexture(textureLocation);
@@ -158,8 +162,8 @@ void OriginWindow::readObject(QFile* file, MyObject& o)
         else if (line.startsWith("vt"))
         {
             QStringList textureCoord = line.split(" ");
-            o.textureCoords[textureNum].x = ((QString)textureCoord[1]).toFloat();
-            o.textureCoords[textureNum].y = ((QString)textureCoord[2]).toFloat();
+            o.textureCoords[textureNum].u = ((QString)textureCoord[1]).toFloat();
+            o.textureCoords[textureNum].v = ((QString)textureCoord[2]).toFloat();
             textureNum++;
         }
         //points
@@ -185,8 +189,7 @@ void OriginWindow::readObject(QFile* file, MyObject& o)
                 QString thePoint = (QString)planePoints[0];
                 QString theTextureCoord = (QString)planePoints[1];
                 QString theNormal = (QString)planePoints[2];
-                ((QString)planePoints[1]).toInt();
-                ((QString)planePoints[2]).toInt()-1;
+
                 if (!thePoint.isEmpty())
                 {
                     //shift down one because they aren't zero indexed in the obj file...
@@ -194,14 +197,13 @@ void OriginWindow::readObject(QFile* file, MyObject& o)
                 }
                 if (!theTextureCoord.isEmpty() && !thePoint.isEmpty())
                 {
-                    //textureCoords
-                    o.points[thePoint.toInt()-1].u = o.textureCoords[theTextureCoord.toInt()].x;
-                    o.points[thePoint.toInt()-1].v = o.textureCoords[theTextureCoord.toInt()].y;
+                    //shift down one because they aren't zero indexed in the obj file...
+                    aPlane.tids[planePointNum] = theTextureCoord.toInt()-1;
                 }
                 if (!theNormal.isEmpty())
                 {
-                    //normal TODO Fix this (points have normals not planes)
-                    aPlane.normal = o.normals[theNormal.toInt()];
+                    //shift down one because they aren't zero indexed in the obj file...
+                    aPlane.nids[planePointNum] = theNormal.toInt()-1;
                 }
                 planePointNum++;
             }
@@ -213,12 +215,6 @@ void OriginWindow::readObject(QFile* file, MyObject& o)
     }
     o.nPlanes = planeNum;
     o.nPoints = pointNum;
-
-    // Set the object as casting a shadow.
-    o.castsShadow = 1;
-
-    // Compute the connectivity of the edges of the object.
-    o.setConnectivity();
 }
 
 GLuint& OriginWindow::readTexture(QString textureLocation)

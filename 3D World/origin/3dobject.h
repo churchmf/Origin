@@ -26,7 +26,7 @@ void VMatMult(GLmatrix16f M, GLvector4f v);
 // point/vector in 3d-coordinate system
 struct MyPoint{
     //fields
-        float x, y, z, u, v;
+        float x, y, z;
     //methods
         MyPoint cross(MyPoint op2);
         MyPoint minus(MyPoint op2);
@@ -39,13 +39,19 @@ struct MyPoint{
         MyPoint plus(MyPoint p2);
 };
 
+struct MyUV {
+    float u, v;
+};
+
 // structure describing an object's face
 struct MyPlane{
         MyPoint color;					//plane color
         unsigned int nPoints;				//vertices in plane
         unsigned int pids[MAX_PLANE_POINTS];		//id of points of this plane
+        unsigned int tids[MAX_PLANE_POINTS];		//id of textureCoords of this plane
+        unsigned int nids[MAX_PLANE_POINTS];		//id of normals of this plane
         unsigned int neigh[MAX_PLANE_POINTS];		//neighbor planes
-        MyPoint normal;					//normal vector
+        //MyPoint normal;					//normal vector
         bool islit;					//is it facing the light?
 };
 
@@ -67,7 +73,7 @@ struct MyObject{
         MyPoint points[MAX_OBJECT_POINTS];		//points
         MyPlane planes[MAX_OBJECT_PLANES];		//surfaces
         MyPoint normals[MAX_OBJECT_NORMALS];            //normals
-        MyPoint textureCoords[MAX_OBJECT_POINTS];       //textureCoords
+        MyUV    textureCoords[MAX_OBJECT_POINTS];       //textureCoords
 
         MyPoint position;				//location
         MyPoint goalPosition;                           //goal position
@@ -76,15 +82,8 @@ struct MyObject{
 
         MyMaterial material;                            //object's material
 
-        bool castsShadow;				//does it cast a shadow?
     //methods
-        void assessVisibility(float *lp);		//decide which planes of the object are lit
-        void castShadow(float *lp);			//generate shadow quads
-        void renderShadow(float *lp);			//draw shadows using stencil buffer and castShadow
         void draw();					//draw object
-        void setConnectivity();				//find neighbor planes for each plane of the object
-        void print();					//for debug
-        void calcNormals();				//calculate normals for all planes
         void scale(MyPoint k);                          //scale an object(x,y,z) by the point(kx,ky,kz)
 };
 
