@@ -207,69 +207,19 @@ void OriginWindow::drawAxis()
     glLineWidth(2);
     glBegin(GL_LINES);
     glVertex2f(cx, cy);
-    glVertex2f(cx - xx, cy - xy);
+    //glColor3f(1,0,0);
+    glVertex2f(cx + xx, cy + xy);
     glVertex2f(cx, cy);
+    //glColor3f(0,1,0);
     glVertex2f(cx + yx, cy + yy);
     glVertex2f(cx, cy);
-    glVertex2f(cx - zx, cy - zy);
+    //glColor3f(0,0,1);
+    glVertex2f(cx + zx, cy + zy);
     glEnd();
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
-
-
-
-    //attempt 2
-    /*
-    glPushMatrix ();
-
-          glTranslatef (-2.4, -1.5, -5);
-          glRotatef(lookupdown,1.0f,0,0);
-          glRotatef(yrot,0,1.0f,0);
-          glScalef(0.25, 0.25, 0.25);
-
-          glLineWidth (2.0);
-
-          glBegin (GL_LINES);
-             glColor3f (1,0,0);  glVertex3f (0,0,0);  glVertex3f (1,0,0);    // X axis is red.
-             glColor3f (0,1,0);  glVertex3f (0,0,0);  glVertex3f (0,1,0);    // Y axis is green.
-             glColor3f (0,0,1);  glVertex3f (0,0,0);  glVertex3f (0,0,1);    // z axis is blue.
-          glEnd();
-
-      glPopMatrix ();
-      */
-
-    //attempt 3
-    // Draw Axis
-    //glPushMatrix();
-    //glLoadIdentity();							// Reset The Projection Matrix
-    //gluOrtho2D(0,this->width(),0,this->height());			// Set Up An Ortho Screen
-    //glMatrixMode(GL_MODELVIEW);                                         // Select The Modelview Matrix
-    //glTranslatef(this->width()/2-20, this->height()/2-10, 0.1);     // Move To The corner of the screen
-
-    //GLfloat x_m, y_m, z_m, u_m, v_m;
-    //GLfloat xtrans = -xpos;
-    //GLfloat ztrans = -zpos;
-    //GLfloat ytrans = -walkbias-0.25f;
-    //GLfloat sceneroty = yrot;
-
-    //glTranslatef(-xtrans, -ytrans, -ztrans);
-
-    //glRotatef(lookupdown,1.0f,0,0);
-    //glRotatef(sceneroty,0,1.0f,0);
-
-    //glTranslatef(xtrans, ytrans, ztrans);
-    //glBegin(GL_LINES);
-    // Start Drawing A Quad
-    //glColor3f(1, 0, 0);
-    //glVertex3f(-2,-2,0.0f);                    // Bottom Left
-    //glVertex3f( 2,-2,0.0f);                    // Bottom Right
-    //glVertex3f( 2, 2,0.0f);                    // Top Right
-    //glVertex3f(-2, 2,0.0f);                    // Top Left
-    //glEnd();
-    // Done Drawing Quad
-    //glPopMatrix();
 }
 
 void OriginWindow::drawCrosshair()
@@ -352,7 +302,9 @@ void OriginWindow::updatePropsPosition()
 
         // If the prop is near the goal, do nothing
         if (curPosition.isNear(goal))
-            continue;
+        {
+            curPosition = goal;
+        }
 
         // Otherwise, get the direction to move
         MyPoint diff = goal.minus(curPosition);

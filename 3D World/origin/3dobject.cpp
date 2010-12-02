@@ -51,9 +51,9 @@ MyPoint MyPoint::times(float c){
 
 float MyPoint::length(MyPoint p2)
 {
-    int diffX = p2.x - x;
-    int diffY = p2.y - y;
-    int diffZ = p2.z - z;
+    float diffX = p2.x - x;
+    float diffY = p2.y - y;
+    float diffZ = p2.z - z;
     return sqrt (diffX * diffX + diffY * diffY + diffZ * diffZ);
 }
 

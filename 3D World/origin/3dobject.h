@@ -12,8 +12,8 @@ This file is borrowed from Assignment3 of CMPUT411 at the University of Alberta.
 #define MAX_OBJECT_PLANES 100
 #define MAX_OBJECT_NORMALS 100
 #define MAX_PLANE_POINTS 10
-#define PROP_TRANSFORM_STEP 1.0f
-#define PROP_ROTATE_STEP 1.0f
+#define PROP_TRANSFORM_STEP 0.01f
+#define PROP_ROTATE_STEP 0.01f
 
 typedef float GLvector4f[4];		// Typedef's For VMatMult Procedure
 typedef float GLmatrix16f[16];		// Typedef's For VMatMult Procedure

@@ -12,7 +12,7 @@ void OriginWindow::applyTransformation()
         return;
 
     // if no prop is selected, do nothing
-    int propIndex = scene.selectedProp;
+    int propIndex = 0;//scene.selectedProp;
     if (propIndex == NO_SELECTION)
         return;
 
@@ -26,6 +26,8 @@ void OriginWindow::applyTransformation()
     //Scale
     else if (type == Scale)
     {
+        if (transformation.x < 0 || transformation.y < 0 || transformation.z < 0)
+            return;
         selectedProp.scale(transformation);
         printf("Scale\n");
     }
@@ -42,7 +44,7 @@ void OriginWindow::applyRotation()
         return;
 
     // if no prop is selected, do nothing
-    int propIndex = scene.selectedProp;
+    int propIndex = 0;//scene.selectedProp;
     if (propIndex == NO_SELECTION)
         return;
 

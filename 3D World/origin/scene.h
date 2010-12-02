@@ -11,6 +11,10 @@
 
 /* global variables */
 struct Scene{
+    Scene() {
+        selectedProp = NO_SELECTION;
+    }
+
     MyObject obj[MAX_OBJECTS];			//objects
     MyObject prop[MAX_OBJECTS];                 //props
     int objcount;				//number of loaded objects
