@@ -52,6 +52,7 @@ protected:
     void updatePlayerPosition();
     void updatePropsPosition();
     void updatePropsRotation();
+    void updatePropsScale();
 
     //User Input Events
     void updateKeyState(int key, bool isPressed);

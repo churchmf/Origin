@@ -95,6 +95,9 @@ void OriginWindow::paintGL()
         // Get the rotation to rotate the object by.
         MyPoint& rotation = object.rotation;
 
+        // Get the object scale
+        MyPoint& scale = object.scale;
+
         // Make a copy of the current matrix on top of the stack.
         glPushMatrix();
 
@@ -105,6 +108,9 @@ void OriginWindow::paintGL()
         glRotatef(-rotation.x, 1.0, 0.0, 0.0);
         glRotatef(-rotation.y, 0.0, 1.0, 0.0);
         glRotatef(-rotation.z, 0.0, 0.0, 1.0);
+
+        // Scale the object.
+        glScalef(scale.x,scale.y,scale.z);
 
         // Draw the object.
         object.draw();
@@ -125,6 +131,9 @@ void OriginWindow::paintGL()
         // Get the rotation to rotate the object by.
         MyPoint& rotation = object.rotation;
 
+        // Get the object scale
+        MyPoint& scale = object.scale;
+
         // Make a copy of the current matrix on top of the stack.
         glPushMatrix();
 
@@ -135,6 +144,9 @@ void OriginWindow::paintGL()
         glRotatef(-rotation.x, 1.0, 0.0, 0.0);
         glRotatef(-rotation.y, 0.0, 1.0, 0.0);
         glRotatef(-rotation.z, 0.0, 0.0, 1.0);
+
+        // Scale the object.
+        glScalef(scale.x,scale.y,scale.z);
 
         // Draw the object.
         object.draw();
@@ -334,10 +346,34 @@ void OriginWindow::updatePropsRotation()
         MyPoint diff = goal.minus(curRotation);
         diff.normalize();
 
-        // Move towards the goal
+        // Rotate towards the goal
         curRotation.x += diff.x * PROP_ROTATE_STEP;
         curRotation.y += diff.y * PROP_ROTATE_STEP;
         curRotation.z += diff.z * PROP_ROTATE_STEP;
+    }
+}
+
+void OriginWindow::updatePropsScale()
+{
+    for(int i=0; i<scene.propcount; i++)
+    {
+        // Create a reference to the prop.
+        MyObject& o = scene.prop[i];
+        MyPoint& goal = o.goalScale;
+        MyPoint& curScale = o.scale;
+
+        // If the prop is near the goal, do nothing
+        if (curScale.equals(goal))
+            continue;
+
+        // Otherwise, get the direction to move
+        MyPoint diff = goal.minus(curScale);
+        diff.normalize();
+
+        // Scale towards the goal
+        curScale.x += diff.x * PROP_SCALE_STEP;
+        curScale.y += diff.y * PROP_SCALE_STEP;
+        curScale.z += diff.z * PROP_SCALE_STEP;
     }
 }
 
@@ -352,6 +388,9 @@ void OriginWindow::timerLoop()
 
     //Update the props' rotation
     updatePropsRotation();
+
+    //Update the props' scale
+    updatePropsScale();
 
     //UpdateGL
     updateGL();

@@ -48,6 +48,14 @@ MyPoint MyPoint::times(float c){
     res.z= z*c;
     return res;
 }
+//matrix scaling
+MyPoint MyPoint::scale(MyPoint p2){
+    MyPoint res;
+    res.x= x*p2.x;
+    res.y= y*p2.y;
+    res.z= z*p2.z;
+    return res;
+}
 
 float MyPoint::length(MyPoint p2)
 {
@@ -120,6 +128,7 @@ void MyObject::draw()
 }
 
 //scale an object(x,y,z) by the point(kx,ky,kz)
+/*
 void MyObject::scale(MyPoint k)
 {
     for (unsigned int i=0;i<nPoints;i++){
@@ -129,3 +138,4 @@ void MyObject::scale(MyPoint k)
         point.z *= k.z;
     }
 }
+*/
