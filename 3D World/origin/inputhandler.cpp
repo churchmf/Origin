@@ -198,6 +198,14 @@ void OriginWindow::keyPressEvent( QKeyEvent *e )
     {
         exit(0);
     }
+    else if (key == Qt::Key_T)
+    {
+        applyTransformation();
+    }
+    else if (key == Qt::Key_R)
+    {
+        applyRotation();
+    }
     else if (key == Qt::Key_O)
     {
         OriginWindow::loadLevel();

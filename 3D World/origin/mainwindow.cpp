@@ -37,7 +37,7 @@ MainWindow::MainWindow(QWidget *parent) : QDialog (parent)
     transformationTable->setVerticalHeaderLabels(QStringList(""));
     for (int i=0; i < COLUMN_COUNT; i++)
     {
-        transformationTable->setItem(0,i, new QTableWidgetItem(0));
+        transformationTable->setItem(0,i, new QTableWidgetItem("0",0));
         transformationTable->horizontalHeader()->setResizeMode(i,QHeaderView::Stretch);
     }
 
