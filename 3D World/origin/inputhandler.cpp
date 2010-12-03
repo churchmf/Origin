@@ -26,7 +26,7 @@ void OriginWindow::applyTransformation()
     //Scale
     else if (type == Scale)
     {
-        if (transformation.x < 0 || transformation.y < 0 || transformation.z < 0)
+        if (transformation.x <= 0 || transformation.y <= 0 || transformation.z <= 0)
             return;
         selectedProp.goalScale = (selectedProp.scale).scale(transformation);
         printf("Scale\n");

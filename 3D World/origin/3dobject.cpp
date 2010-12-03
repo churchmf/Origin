@@ -57,6 +57,15 @@ MyPoint MyPoint::scale(MyPoint p2){
     return res;
 }
 
+MyPoint MyPoint::divide(float c)
+ {
+     MyPoint res;
+     res.x= x/c;
+     res.y= y/c;
+     res.z= z/c;
+     return res;
+ }
+
 float MyPoint::length(MyPoint p2)
 {
     float diffX = p2.x - x;
@@ -101,14 +110,14 @@ void MyObject::draw()
     //glColor3f(this->material.kd.red(),this->material.kd.green(),this->material.kd.blue());
 
     // For each plane,
-    for(int i=0; i<nPlanes; i++){
+    for(unsigned int i=0; i<nPlanes; i++){
         // Get the plane object.
         MyPlane plane = planes[i];
 
         // Start adding vertices to the polygon.
         glBegin(GL_POLYGON);
         // For each vertex on the plane,
-        for(int j=0; j<plane.nPoints; j++){
+        for(unsigned int j=0; j<plane.nPoints; j++){
             // Get the vertex, normal and textureCoord.
             MyPoint point = points[plane.pids[j]];
             MyPoint normal = normals[plane.nids[j]];

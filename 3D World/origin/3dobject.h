@@ -39,6 +39,7 @@ struct MyPoint{
     bool isNear(MyPoint p2);
     MyPoint plus(MyPoint p2);
     MyPoint scale(MyPoint p2);
+    MyPoint divide(float c);
 };
 
 struct MyUV {

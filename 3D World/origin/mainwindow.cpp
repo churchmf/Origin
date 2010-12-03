@@ -66,8 +66,8 @@ MainWindow::MainWindow(QWidget *parent) : QDialog (parent)
     rotationAnglePicker = new QSpinBox();
     sizePolicy1.setHeightForWidth(rotationAnglePicker->sizePolicy().hasHeightForWidth());
     rotationAnglePicker->setSizePolicy(sizePolicy1);
-    rotationAnglePicker->setMaximum(359);
-    rotationAnglePicker->setMinimum(0);
+    rotationAnglePicker->setMaximum(360);
+    rotationAnglePicker->setMinimum(-360);
 
 
     //setup transformationButton

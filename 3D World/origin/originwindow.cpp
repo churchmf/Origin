@@ -90,27 +90,27 @@ void OriginWindow::paintGL()
         MyObject& object = scene.obj[i];
 
         // Get the position to draw it at.
-        MyPoint& position = object.position;
+        //MyPoint& position = object.position;
 
         // Get the rotation to rotate the object by.
-        MyPoint& rotation = object.rotation;
+        //MyPoint& rotation = object.rotation;
 
         // Get the object scale
-        MyPoint& scale = object.scale;
+        //MyPoint& scale = object.scale;
 
         // Make a copy of the current matrix on top of the stack.
         glPushMatrix();
 
         // Translate the origin to the point's position?
-        glTranslatef(position.x, position.y, position.z);
+        //glTranslatef(position.x, position.y, position.z);
 
         // Rotate the object.
-        glRotatef(-rotation.x, 1.0, 0.0, 0.0);
-        glRotatef(-rotation.y, 0.0, 1.0, 0.0);
-        glRotatef(-rotation.z, 0.0, 0.0, 1.0);
+        //glRotatef(-rotation.x, 1.0, 0.0, 0.0);
+        //glRotatef(-rotation.y, 0.0, 1.0, 0.0);
+        //glRotatef(-rotation.z, 0.0, 0.0, 1.0);
 
         // Scale the object.
-        glScalef(scale.x,scale.y,scale.z);
+        //glScalef(scale.x,scale.y,scale.z);
 
         // Draw the object.
         object.draw();
@@ -131,22 +131,25 @@ void OriginWindow::paintGL()
         // Get the rotation to rotate the object by.
         MyPoint& rotation = object.rotation;
 
-        // Get the object scale
+        // Get the scale.
         MyPoint& scale = object.scale;
 
         // Make a copy of the current matrix on top of the stack.
         glPushMatrix();
 
-        // Translate the origin to the point's position?
+        // Translate the origin to the point's position.
         glTranslatef(position.x, position.y, position.z);
 
-        // Rotate the object
+        // Rotate the object.
         glRotatef(-rotation.x, 1.0, 0.0, 0.0);
         glRotatef(-rotation.y, 0.0, 1.0, 0.0);
         glRotatef(-rotation.z, 0.0, 0.0, 1.0);
 
         // Scale the object.
         glScalef(scale.x,scale.y,scale.z);
+
+        // Translate the origin back
+        glTranslatef(-position.x, -position.y, -position.z);
 
         // Draw the object.
         object.draw();

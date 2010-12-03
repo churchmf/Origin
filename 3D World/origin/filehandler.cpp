@@ -215,6 +215,19 @@ void OriginWindow::readObject(QFile* file, MyObject& o)
     }
     o.nPlanes = planeNum;
     o.nPoints = pointNum;
+
+    //initialize object's position
+    if (pointNum > 0)
+    {
+        // Take the average of all the points for the objects position (center)
+        MyPoint center;
+        for (int i=0; i<pointNum; i++)
+        {
+            center = center.plus(o.points[i]);
+        }
+        o.position = center.divide(pointNum);
+        o.goalPosition = o.position;
+    }
 }
 
 GLuint& OriginWindow::readTexture(QString textureLocation)
