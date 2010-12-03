@@ -220,17 +220,34 @@ void OriginWindow::drawAxis()
     zx = l * fvViewMatrix[8];
     zy = l * fvViewMatrix[9];
     glLineWidth(2);
+
+    // Save the current colour for later.
+    glPushAttrib(GL_CURRENT_BIT);
+
+    // Disable textures temporarily.
+    glDisable(GL_TEXTURE_2D);
+
     glBegin(GL_LINES);
+    // Red.
+    glColor3f(1,0,0);
     glVertex2f(cx, cy);
-    //glColor3f(1,0,0);
     glVertex2f(cx + xx, cy + xy);
+    // Green.
+    glColor3f(0,1,0);
     glVertex2f(cx, cy);
-    //glColor3f(0,1,0);
     glVertex2f(cx + yx, cy + yy);
+    // Blue
+    glColor3f(0,0,1);
     glVertex2f(cx, cy);
-    //glColor3f(0,0,1);
     glVertex2f(cx + zx, cy + zy);
     glEnd();
+
+    // Re-enable textures.
+    glEnable(GL_TEXTURE_2D);
+
+    // Restore the old colour.
+    glPopAttrib();
+
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
     glMatrixMode(GL_MODELVIEW);
@@ -264,6 +281,10 @@ void OriginWindow::drawCrosshair()
 
 void OriginWindow::updatePlayerPosition()
 {
+    // Keep track of the old x and z positions for collision detection purposes.
+    GLfloat oldxpos = xpos;
+    GLfloat oldzpos = zpos;
+
     // Handle KeysPressed
     if (keysPressed.w)
     {
@@ -304,6 +325,28 @@ void OriginWindow::updatePlayerPosition()
         xpos += (float)cos(heading*piover180) * 0.03f;
         zpos += (float)sin(heading*piover180) * 0.03f;
     }
+
+    // Check for collisions with each object in the scene.
+    // NOTE: This will be wrong for the level box. :-/
+
+// Commented out because I want to commit this, but don't want to break anything.
+
+//    for(int i=0; i<scene.objcount; i++)
+//    {
+//        // Get the Object.
+//        MyObject& o = scene.obj[i];
+
+//        // Check for collisions with each plane of the object.
+//        for(int j=0; j<o.nPlanes; j++)
+//        {
+//            // Get the plane.
+//            MyPlane& p = o.planes[j];
+
+//            if(){
+
+//            }
+//        }
+//    }
 }
 
 void OriginWindow::updatePropsPosition()
