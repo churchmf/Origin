@@ -327,26 +327,81 @@ void OriginWindow::updatePlayerPosition()
     }
 
     // Check for collisions with each object in the scene.
-    // NOTE: This will be wrong for the level box. :-/
 
-// Commented out because I want to commit this, but don't want to break anything.
+    // Convert the player's previous position into a MyPoint.
+    MyPoint linePoint0;
+    linePoint0.x = oldxpos;
+    linePoint0.y = walkbias+0.25f;
+    linePoint0.z = oldzpos;
 
-//    for(int i=0; i<scene.objcount; i++)
-//    {
-//        // Get the Object.
-//        MyObject& o = scene.obj[i];
+    // Convert the player's new position into a MyPoint.
+    MyPoint linePoint1;
+    linePoint1.x = xpos;
+    linePoint1.y = walkbias+0.25f;
+    linePoint1.z = zpos;
 
-//        // Check for collisions with each plane of the object.
-//        for(int j=0; j<o.nPlanes; j++)
-//        {
-//            // Get the plane.
-//            MyPlane& p = o.planes[j];
+    // Get a unit vector along the line.
+    MyPoint lineUnitVector = linePoint1.minus(linePoint0);
+    lineUnitVector.normalize();
 
-//            if(){
+    for(int i=0; i<scene.objcount; i++)
+    {
+        // Get the Object.
+        MyObject& object = scene.obj[i];
 
-//            }
-//        }
-//    }
+        // Check for collisions with each plane of the object.
+        for(int j=0; j<object.nPlanes; j++)
+        {
+            // Get the plane.
+            MyPlane& plane = object.planes[j];
+
+            // Get 3 points on the plane.
+            MyPoint p0 = object.points[plane.pids[0]];
+            MyPoint p1 = object.points[plane.pids[1]];
+            MyPoint p2 = object.points[plane.pids[2]];
+
+            // Get the normal of the plane.
+            MyPoint planeNormal = (p1.minus(p0)).cross(p2.minus(p0));
+            planeNormal.normalize();
+
+            // Solve for d, the distance along the line that the intersection occurs (if it occurs at all).
+            double numerator = (p0.minus(linePoint0)).dot(planeNormal);
+            double denominator = lineUnitVector.dot(planeNormal);
+
+            // If the numerator is not zero, and the denominator is zero,
+            if( !(-zeroCutoff < numerator && numerator < zeroCutoff) && (-zeroCutoff < denominator && denominator < zeroCutoff) )
+            {
+                // There is no collision, so skip to the next iteration of the loop.
+                continue;
+            }
+            // If the numerator and denominator are both zero,
+            if( (-zeroCutoff < denominator && denominator < zeroCutoff) && (-zeroCutoff < numerator && numerator < zeroCutoff) )
+            {
+                // There's infinite collisions, because the line is contained in the plane.
+                // In this case we should move the player in the direction of the normal: away from the plane.
+                xpos = xpos + planeNormal.x;
+                zpos = zpos + planeNormal.z;
+                break;
+            }
+            // Neither the numerator nor denominator are zero, so there IS an intersection point d.
+            double d = numerator/denominator;
+
+            // However, we still need to check that d is between the line's endpoints and within the plane's boundaries.
+
+            // Check endpoints:
+            if(0 < d && linePoint0.length(lineUnitVector.times(d)) < linePoint0.length(linePoint1) ){
+                // Check boundaries:
+                if(true)
+                {
+                    // There is a collision, so reset the position to the last position.
+                    xpos = oldxpos;
+                    zpos = oldzpos;
+                    return;
+                }
+            }
+            // If program execution gets here, there is no collision, so allow the player's position to be updated.
+        }
+    }
 }
 
 void OriginWindow::updatePropsPosition()

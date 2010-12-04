@@ -17,6 +17,9 @@
 #define MIN_HEIGHT 600
 #define MAX_TEXTURES 15
 
+// This constant protects against rounding errors that could otherwise arise during collision detection.
+const double zeroCutoff = 1e-10;
+
 const float piover180 = 0.0174532925f;
 
 enum TransformationType { Translate, Scale };
