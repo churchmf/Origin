@@ -138,7 +138,7 @@ void OriginWindow::paintGL()
         glPushMatrix();
 
         // Translate the origin to the point's position.
-        glTranslatef(position.x, position.y, position.z);
+        //glTranslatef(position.x, position.y, position.z);
 
         // Rotate the object.
         glRotatef(-rotation.x, 1.0, 0.0, 0.0);
@@ -148,8 +148,8 @@ void OriginWindow::paintGL()
         // Scale the object.
         glScalef(scale.x,scale.y,scale.z);
 
-        // Translate the origin back
-        glTranslatef(-position.x, -position.y, -position.z);
+        // Translate back
+        //glTranslatef(-position.x, -position.y, -position.z);
 
         // Draw the object.
         object.draw();
@@ -173,33 +173,6 @@ void OriginWindow::drawHUD()
 
 void OriginWindow::drawAxis()
 {
-
-    /*
-    // Draw Background
-    glPushMatrix();
-    glLoadIdentity();							// Reset The Projection Matrix
-    gluOrtho2D(0,this->width(),0,this->height());			// Set Up An Ortho Screen
-    glMatrixMode(GL_MODELVIEW);                                         // Select The Modelview Matrix
-    glTranslatef(this->width()/2 - 20.1, this->height()/2 - 11, 0.1);     // Move To The corner of the screen
-    glBindTexture(GL_TEXTURE_2D, texture[1]);                           // Select The Correct Texture
-    glBegin(GL_QUADS);							// Start Drawing A Quad
-    glTexCoord2f(0.0f,0.0f); glVertex3f(-2,-2,0.0f);                    // Bottom Left
-    glTexCoord2f(1.0f,0.0f); glVertex3f( 2,-2,0.0f);                    // Bottom Right
-    glTexCoord2f(1.0f,1.0f); glVertex3f( 2, 2,0.0f);                    // Top Right
-    glTexCoord2f(0.0f,1.0f); glVertex3f(-2, 2,0.0f);                    // Top Left
-    glEnd();
-    // Done Drawing Quad
-    glPopMatrix();
-    */
-
-    //1. Change viewport to cover only corner of a screen
-    //2. Reinitialize modelview and projection matrices - apply all rotations and perspective you need (do not apply any scaling or translation).
-    //3. Draw your axes around (0,0,0) point
-    //4. Restore viewport and matrices
-
-    //attempt1
-
-
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
     glLoadIdentity();
@@ -265,7 +238,6 @@ void OriginWindow::drawCrosshair()
 
     // Draw The Crosshair
     glEnable(GL_BLEND);
-    //glDisable(GL_DEPTH_TEST);
     glBindTexture(GL_TEXTURE_2D, texture[0]);                           // Select The Correct Texture
     glBegin(GL_QUADS);							// Start Drawing A Quad
     glTexCoord2f(0.0f,0.0f); glVertex3f(-1,-1,0.0f);                    // Bottom Left
@@ -275,7 +247,6 @@ void OriginWindow::drawCrosshair()
     glEnd();
     // Done Drawing Quad
     glDisable(GL_BLEND);
-    //glEnable(GL_DEPTH_TEST);
     glPopMatrix();
 }
 
@@ -343,6 +314,7 @@ void OriginWindow::updatePlayerPosition()
     // Get a unit vector along the line.
     MyPoint lineUnitVector = linePoint1.minus(linePoint0);
     lineUnitVector.normalize();
+    printf("movement: %f,%f,%f \n",lineUnitVector.x,lineUnitVector.y,lineUnitVector.z);
 
     for(int i=0; i<scene.objcount; i++)
     {
@@ -385,6 +357,7 @@ void OriginWindow::updatePlayerPosition()
             }
             // Neither the numerator nor denominator are zero, so there IS an intersection point d.
             double d = numerator/denominator;
+            printf("d value: %d \n",d);
 
             // However, we still need to check that d is between the line's endpoints and within the plane's boundaries.
 
@@ -402,6 +375,25 @@ void OriginWindow::updatePlayerPosition()
             // If program execution gets here, there is no collision, so allow the player's position to be updated.
         }
     }
+}
+
+bool OriginWindow::checkCollision(MyObject& object1)
+{
+    bool hasCollision = false;
+    unsigned int numFaces = object1.nPlanes;
+    // Check for collisions with each object in the scene
+    for(int i=0; i<scene.objcount; i++)
+    {
+        // Get the Object.
+        MyObject& object2 = scene.obj[i];
+
+    }
+    for (int i=0; i<scene.propcount; i++)
+    {
+        // Get the Object.
+        MyObject& object2 = scene.prop[i];
+    }
+    return false;
 }
 
 void OriginWindow::updatePropsPosition()

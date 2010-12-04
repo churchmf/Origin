@@ -54,8 +54,7 @@ struct MyPlane{
     unsigned int tids[MAX_PLANE_POINTS];		//id of textureCoords of this plane
     unsigned int nids[MAX_PLANE_POINTS];		//id of normals of this plane
     unsigned int neigh[MAX_PLANE_POINTS];		//neighbor planes
-    //MyPoint normal;					//normal vector
-    bool islit;					//is it facing the light?
+    bool islit;                                         //is it facing the light?
 };
 
 struct MyMaterial{
@@ -97,24 +96,24 @@ struct MyObject{
     //fields
     unsigned int nPlanes;				//number of surfaces that make up this object
     unsigned int nPoints;				//number of vertices that make up this object
-    MyPoint points[MAX_OBJECT_POINTS];		//points
-    MyPlane planes[MAX_OBJECT_PLANES];		//surfaces
-    MyPoint normals[MAX_OBJECT_NORMALS];            //normals
-    MyUV    textureCoords[MAX_OBJECT_POINTS];       //textureCoords
+    MyPoint points[MAX_OBJECT_POINTS];                  //points
+    MyPlane planes[MAX_OBJECT_PLANES];                  //surfaces
+    MyPoint normals[MAX_OBJECT_NORMALS];                //normals
+    MyUV    textureCoords[MAX_OBJECT_POINTS];           //textureCoords
 
-    MyPoint position;				//location
-    MyPoint rotation;				//rotation around (x,y,z) axes
-    MyPoint scale;                                  //scale
-    MyPoint goalPosition;                           //goal position
-    MyPoint goalScale;                              //goal scale
-    MyPoint goalRotation;                           //goal rotation
+    MyPoint position;                                  //location
+    MyPoint rotation;                                  //rotation around (x,y,z) axes
+    MyPoint scale;                                     //scale
+    MyPoint goalPosition;                              //goal position
+    MyPoint goalScale;                                 //goal scale
+    MyPoint goalRotation;                              //goal rotation
 
 
-    MyMaterial material;                            //object's material
+    MyMaterial material;                               //object's material
 
     //methods
     void draw();					//draw object
-    //void scale(MyPoint k);                          //scale an object(x,y,z) by the point(kx,ky,kz)
+    //void scale(MyPoint k);                            //scale an object(x,y,z) by the point(kx,ky,kz)
 };
 
 

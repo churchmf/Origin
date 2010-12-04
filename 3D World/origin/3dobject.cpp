@@ -82,7 +82,7 @@ bool MyPoint::equals(MyPoint p2)
 bool MyPoint::isNear(MyPoint p2)
 {
     float length = this->length(p2);
-    return length < PROP_TRANSFORM_STEP;
+    return length <= PROP_TRANSFORM_STEP;
 }
 
 MyPoint MyPoint::plus(MyPoint p2)
@@ -97,7 +97,7 @@ MyPoint MyPoint::plus(MyPoint p2)
 //return a vector with length 1 in the same direction
 MyPoint MyPoint::normalize(){
     float len= sqrt(x*x+y*y+z*z);
-    MyPoint res= times(1/len);
+    MyPoint res= times(1.0f/len);
     return res;
 }
 /*END *********** MyPoint methods*/

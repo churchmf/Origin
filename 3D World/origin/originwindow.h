@@ -57,6 +57,9 @@ protected:
     void updatePropsRotation();
     void updatePropsScale();
 
+    //Check collisions
+    bool checkCollision(MyObject& object1);
+
     //User Input Events
     void updateKeyState(int key, bool isPressed);
     void mousePressEvent(QMouseEvent *event);

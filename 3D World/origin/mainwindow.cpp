@@ -35,11 +35,23 @@ MainWindow::MainWindow(QWidget *parent) : QDialog (parent)
     headers << "X" << "Y" << "Z";
     transformationTable->setHorizontalHeaderLabels(headers);
     transformationTable->setVerticalHeaderLabels(QStringList(""));
-    for (int i=0; i < COLUMN_COUNT; i++)
-    {
-        transformationTable->setItem(0,i, new QTableWidgetItem("0",0));
-        transformationTable->horizontalHeader()->setResizeMode(i,QHeaderView::Stretch);
-    }
+
+    //setup headers
+    QColor red = QColor(255,0,0,200);
+    QColor green = QColor(0,255,0,200);
+    QColor blue = QColor(0,0,255,200);
+    QTableWidgetItem* item1 = new QTableWidgetItem("0",0);
+    item1->setBackgroundColor(red);
+    QTableWidgetItem* item2 = new QTableWidgetItem("0",0);
+    item2->setBackgroundColor(green);
+    QTableWidgetItem* item3 = new QTableWidgetItem("0",0);
+    item3->setBackgroundColor(blue);
+    transformationTable->setItem(0,0, item1);
+    transformationTable->horizontalHeader()->setResizeMode(0,QHeaderView::Stretch);
+    transformationTable->setItem(0,1, item2);
+    transformationTable->horizontalHeader()->setResizeMode(1,QHeaderView::Stretch);
+    transformationTable->setItem(0,2, item3);
+    transformationTable->horizontalHeader()->setResizeMode(2,QHeaderView::Stretch);
 
     QSizePolicy sizePolicy2(QSizePolicy::Expanding, QSizePolicy::Ignored);
     sizePolicy2.setHorizontalStretch(0);
