@@ -361,6 +361,36 @@ bool OriginWindow::checkCollisionWithAll(QList<MyPoint> before, MyPoint& delta)
         MyPoint linePoint0 = before.at(i);
         MyPoint linePoint1 = after.at(i);
 
+        // Check for collisions with each prop in the scene.
+        for(int j=0; j<scene.propcount; j++)
+        {
+            MyObject& prop = scene.prop[j];
+
+            // Check for collisions with each triangular plane of the prop.
+            for(unsigned int k=0; k<prop.nPlanes; k++)
+            {
+                // Get the triangular plane.
+                MyPlane plane = prop.planes[k];
+
+                // Get the object's position.
+                MyPoint propPos = prop.position;
+
+                // Get points on the triangular plane.
+                MyPoint p1 = prop.points[plane.pids[0]].plus(propPos);
+                MyPoint p2 = prop.points[plane.pids[1]].plus(propPos);
+                MyPoint p3 = prop.points[plane.pids[2]].plus(propPos);
+
+                // Compute the point of intersection.
+                MyPoint intersectionPoint;
+
+                // Check that the intersection point is within the triangular plane:
+                if(CheckLineTri(p1, p2, p3, linePoint0, linePoint1, intersectionPoint))
+                {
+                    return true;
+                }
+            }
+        }
+
         // Check for collisions with each object in the scene.
         for(int j=0; j<scene.objcount; j++)
         {
@@ -380,37 +410,6 @@ bool OriginWindow::checkCollisionWithAll(QList<MyPoint> before, MyPoint& delta)
                 MyPoint p1 = sceneObject.points[plane.pids[0]].plus(objectPos);
                 MyPoint p2 = sceneObject.points[plane.pids[1]].plus(objectPos);
                 MyPoint p3 = sceneObject.points[plane.pids[2]].plus(objectPos);
-
-                // Compute the point of intersection.
-                MyPoint intersectionPoint;
-
-                // Check that the intersection point is within the boundaries of the triangular plane:
-                if(CheckLineTri(p1, p2, p3, linePoint0, linePoint1, intersectionPoint))
-                {
-                    return true;
-                }
-            }
-        }
-
-        // Check for collisions with each object in the scene.
-        for(int j=0; j<scene.propcount; j++)
-        {
-            // Get the Object.
-            MyObject& sceneProp = scene.prop[j];
-
-            // Check for collisions with each triangular plane of the object.
-            for(unsigned int k=0; k<sceneProp.nPlanes; k++)
-            {
-                // Get the triangular plane.
-                MyPlane plane = sceneProp.planes[k];
-
-                // Get the sceneObject's position.
-                MyPoint objectPos = sceneProp.position;
-
-                // Get points on the triangular plane.
-                MyPoint p1 = sceneProp.points[plane.pids[0]].plus(objectPos);
-                MyPoint p2 = sceneProp.points[plane.pids[1]].plus(objectPos);
-                MyPoint p3 = sceneProp.points[plane.pids[2]].plus(objectPos);
 
                 // Compute the point of intersection.
                 MyPoint intersectionPoint;
@@ -474,7 +473,7 @@ void OriginWindow::updatePlayerPosition()
     }
     if (keysPressed.space)
     {
-        ypos += JUMP_STEP;
+        //ypos += JUMP_STEP;
     }
 
     // Exit early if there's no movement.
@@ -486,14 +485,13 @@ void OriginWindow::updatePlayerPosition()
     // Convert the player's previous position into a MyPoint.
     MyPoint linePoint0;
     linePoint0.x = oldxpos;
-    linePoint0.y = 0.5f;
+    linePoint0.y = 0.25f;
     linePoint0.z = oldzpos;
-
 
     // Convert the player's new position into a MyPoint.
     MyPoint linePoint1;
     linePoint1.x = xpos;
-    linePoint1.y = 0.5f;
+    linePoint1.y = 0.25f;
     linePoint1.z = zpos;
 
     QList<MyPoint> cameraPos;
@@ -555,11 +553,27 @@ void OriginWindow::updatePropsPosition()
             // Get the direction to move
             MyPoint diff = goal.minus(curPosition);
             diff.normalize();
+            MyPoint delta;
+            delta.x = diff.x * PROP_TRANSLATE_STEP;
+            delta.y = diff.y * PROP_TRANSLATE_STEP;
+            delta.z = diff.z * PROP_TRANSLATE_STEP;
 
-            // Move towards the goal
-            curPosition.x += diff.x * PROP_TRANSLATE_STEP;
-            curPosition.y += diff.y * PROP_TRANSLATE_STEP;
-            curPosition.z += diff.z * PROP_TRANSLATE_STEP;
+            QList<MyPoint> points;
+            for (int j=0; j<o.nPoints; j++)
+            {
+                points.append(o.points[j].plus(o.position));
+            }
+
+            // Check for collision
+            if (checkCollisionWithAll(points,delta))
+            {
+                goal = curPosition;
+            }
+            else
+            {
+                // Move towards the goal
+                curPosition = curPosition.plus(delta);
+            }
         }
         else
         {
