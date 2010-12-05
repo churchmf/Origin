@@ -297,24 +297,27 @@ void OriginWindow::updatePlayerPosition()
         zpos += (float)sin(heading*piover180) * 0.03f;
     }
 
+    // Exit early if there's no movement.
+    if(xpos == oldxpos && zpos == oldzpos)
+    {
+        return;
+    }
+
     // Check for collisions with each object in the scene.
 
     // Convert the player's previous position into a MyPoint.
     MyPoint linePoint0;
     linePoint0.x = oldxpos;
-    linePoint0.y = walkbias+0.25f;
+    linePoint0.y = walkbias+0.5f;
     linePoint0.z = oldzpos;
 
     // Convert the player's new position into a MyPoint.
     MyPoint linePoint1;
     linePoint1.x = xpos;
-    linePoint1.y = walkbias+0.25f;
+    linePoint1.y = walkbias+0.5f;
     linePoint1.z = zpos;
 
-    // Get a unit vector along the line.
-    MyPoint lineUnitVector = linePoint1.minus(linePoint0);
-    lineUnitVector.normalize();
-    printf("movement: %f,%f,%f \n",lineUnitVector.x,lineUnitVector.y,lineUnitVector.z);
+    printf("movement: %f,%f,%f \n", linePoint1.x-linePoint0.x, linePoint1.y-linePoint0.y, linePoint1.z-linePoint0.z);
 
     for(int i=0; i<scene.objcount; i++)
     {
@@ -327,42 +330,31 @@ void OriginWindow::updatePlayerPosition()
             // Get the plane.
             MyPlane& plane = object.planes[j];
 
-            // Get 3 points on the plane.
-            MyPoint p0 = object.points[plane.pids[0]];
-            MyPoint p1 = object.points[plane.pids[1]];
-            MyPoint p2 = object.points[plane.pids[2]];
+            // Get points on the plane.
+            MyPoint p1 = object.points[plane.pids[0]];
+            MyPoint p2 = object.points[plane.pids[1]];
+            MyPoint p3 = object.points[plane.pids[2]];
+            MyPoint p4 = object.points[plane.pids[3]];
 
-            // Get the normal of the plane.
-            MyPoint planeNormal = (p1.minus(p0)).cross(p2.minus(p0));
+            // Compute the normal of the plane.
+            MyPoint planeNormal = (p3.minus(p2)).cross(p2.minus(p1));
             planeNormal.normalize();
 
-            // Solve for d, the distance along the line that the intersection occurs (if it occurs at all).
-            double numerator = (p0.minus(linePoint0)).dot(planeNormal);
-            double denominator = lineUnitVector.dot(planeNormal);
+            // Solve for d, the parameter value of the intersection point.
+            double numerator = planeNormal.dot(p1.minus(linePoint0));
+            double denominator = planeNormal.dot(linePoint1.minus(linePoint0));
 
-            // If the numerator is not zero, and the denominator is zero,
-            if( !(-zeroCutoff < numerator && numerator < zeroCutoff) && (-zeroCutoff < denominator && denominator < zeroCutoff) )
-            {
-                // There is no collision, so skip to the next iteration of the loop.
-                continue;
-            }
-            // If the numerator and denominator are both zero,
-            if( (-zeroCutoff < denominator && denominator < zeroCutoff) && (-zeroCutoff < numerator && numerator < zeroCutoff) )
-            {
-                // There's infinite collisions, because the line is contained in the plane.
-                // In this case we should move the player in the direction of the normal: away from the plane.
-                xpos = xpos + planeNormal.x;
-                zpos = zpos + planeNormal.z;
-                break;
-            }
             // Neither the numerator nor denominator are zero, so there IS an intersection point d.
-            double d = numerator/denominator;
+            double d=-1;
+            if(denominator != 0){
+                d = numerator / denominator;
+            }
             printf("d value: %d \n",d);
 
             // However, we still need to check that d is between the line's endpoints and within the plane's boundaries.
 
             // Check endpoints:
-            if(0 < d && linePoint0.length(lineUnitVector.times(d)) < linePoint0.length(linePoint1) ){
+            if(0 <= d && d <= 1 ){
                 // Check boundaries:
                 if(true)
                 {
