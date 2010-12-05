@@ -308,16 +308,16 @@ void OriginWindow::updatePlayerPosition()
     // Convert the player's previous position into a MyPoint.
     MyPoint linePoint0;
     linePoint0.x = oldxpos;
-    linePoint0.y = walkbias+0.5f;
+    linePoint0.y = 0.5f;
     linePoint0.z = oldzpos;
 
     // Convert the player's new position into a MyPoint.
     MyPoint linePoint1;
     linePoint1.x = xpos;
-    linePoint1.y = walkbias+0.5f;
+    linePoint1.y = 0.5f;
     linePoint1.z = zpos;
 
-//    printf("movement: %f,%f,%f \n", linePoint1.x-linePoint0.x, linePoint1.y-linePoint0.y, linePoint1.z-linePoint0.z);
+    //    printf("movement: %f,%f,%f \n", linePoint1.x-linePoint0.x, linePoint1.y-linePoint0.y, linePoint1.z-linePoint0.z);
 
     for(int i=0; i<scene.objcount; i++)
     {
@@ -340,13 +340,13 @@ void OriginWindow::updatePlayerPosition()
             planeNormal.normalize();
 
             // If the player is too close to the triangular plane, collide.
-//            printf("distance to plane: %d \n", planeNormal.dot(linePoint1.minus(p1)));
-            if(fabs(planeNormal.dot(linePoint1.minus(p1))) < 0.01f)
-            {
-                xpos = oldxpos;
-                zpos = oldzpos;
-                return;
-            }
+            printf("distance to plane: %d \n", planeNormal.dot(linePoint1.minus(p1)));
+//            if(fabs(planeNormal.dot(linePoint1.minus(p1))) < 0.1f)
+//            {
+//                xpos = oldxpos;
+//                zpos = oldzpos;
+//                return;
+//            }
 
             // Compute the numerator and denominator for computing d.
             double numerator = planeNormal.dot(p1.minus(linePoint0));
@@ -357,7 +357,7 @@ void OriginWindow::updatePlayerPosition()
 
             // Compute d, the parameter value on the line of the point of intersection.
             double d = numerator / denominator;
-//            printf("d value: %d \n",d);
+            //            printf("d value: %d \n",d);
 
             // Check if d is between the endpoints of the line:
             if(0 <= d && d <= 1 )
@@ -366,7 +366,8 @@ void OriginWindow::updatePlayerPosition()
                 MyPoint intersectionPoint = linePoint0.plus(linePoint1.times(d));
 
                 // Check that the intersection point is within the boundaries of the triangular plane:
-                if(pointInsideTriangle(intersectionPoint, p1, p2, p3))
+                if(CheckLineTri(p1, p2, p3, linePoint0, linePoint1, intersectionPoint))
+//                if(pointInsideTriangle(intersectionPoint, p1, p2, p3))
                 {
                     // There is a collision, so reset the position to the last position.
                     xpos = oldxpos;
@@ -416,6 +417,37 @@ bool OriginWindow::pointInsideTriangle(MyPoint& p, MyPoint& a, MyPoint& b, MyPoi
 
     return (0 < u) && (0 < v) && (u + v < 1);
 }
+
+bool OriginWindow::CheckLineTri(MyPoint& TP1, MyPoint& TP2, MyPoint& TP3, MyPoint& LP1, MyPoint& LP2, MyPoint& HitPos)
+{
+    MyPoint normal, IntersectPos;
+
+    // Find Triangle Normal
+    normal = TP2.minus(TP1).cross(TP3.minus(TP1));
+    normal.normalize(); // not really needed
+
+    // Find distance from LP1 and LP2 to the plane defined by the triangle
+    float Dist1 = (LP1.minus(TP1)).dot( normal );
+    float Dist2 = (LP2.minus(TP1)).dot( normal );
+    if ( (Dist1 * Dist2) >= 0.0f) return false;  // line doesn't cross the triangle.
+    if ( Dist1 == Dist2) return false;// line and plane are parallel
+
+    // Find point on the line that intersects with the plane
+    IntersectPos = LP1.plus(LP2.minus(LP1).times(-Dist1/(Dist2-Dist1)));
+
+    // Find if the interesection point lies inside the triangle by testing it against all edges
+    MyPoint vTest;
+    vTest = normal.cross(TP2.minus(TP1));
+    if(vTest.dot(IntersectPos.minus(TP1)) < 0.0f) return false;
+    vTest = normal.cross(TP3.minus(TP2));
+    if(vTest.dot(IntersectPos.minus(TP2)) < 0.0f) return false;
+    vTest = normal.cross(TP1.minus(TP3));
+    if(vTest.dot(IntersectPos.minus(TP1)) < 0.0f) return false;
+
+    HitPos = IntersectPos;
+    return true;
+}
+
 
 bool OriginWindow::checkCollision(MyObject& object1)
 {

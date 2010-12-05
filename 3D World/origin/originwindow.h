@@ -60,6 +60,7 @@ protected:
     //Check collisions
     bool checkCollision(MyObject& object1);
     bool pointInsideTriangle(MyPoint& p, MyPoint& a, MyPoint& b, MyPoint& c);
+    bool CheckLineTri(MyPoint& TP1, MyPoint& TP2, MyPoint& TP3, MyPoint& LP1, MyPoint& LP2, MyPoint& HitPos);
 
     //User Input Events
     void updateKeyState(int key, bool isPressed);
