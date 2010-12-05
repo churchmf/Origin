@@ -303,8 +303,6 @@ void OriginWindow::updatePlayerPosition()
         return;
     }
 
-    // Check for collisions with each object in the scene.
-
     // Convert the player's previous position into a MyPoint.
     MyPoint linePoint0;
     linePoint0.x = oldxpos;
@@ -319,6 +317,7 @@ void OriginWindow::updatePlayerPosition()
 
     //    printf("movement: %f,%f,%f \n", linePoint1.x-linePoint0.x, linePoint1.y-linePoint0.y, linePoint1.z-linePoint0.z);
 
+    // Check for collisions with each object in the scene.
     for(int i=0; i<scene.objcount; i++)
     {
         // Get the Object.
@@ -335,30 +334,6 @@ void OriginWindow::updatePlayerPosition()
             MyPoint p2 = object.points[plane.pids[1]];
             MyPoint p3 = object.points[plane.pids[2]];
 
-            // Compute the normal of the triangular plane.
-            MyPoint planeNormal = (p2.minus(p1)).cross(p3.minus(p1));
-            //            MyPoint planeNormal = (p3.minus(p2)).cross(p2.minus(p1));
-            planeNormal.normalize();
-
-            //            // If the player is too close to the triangular plane, collide.
-            //            printf("distance to plane: %f \n", (linePoint1.minus(p1)).dot(planeNormal));
-            //            if( CheckLineTri() )
-            //            {
-            //                xpos = oldxpos;
-            //                zpos = oldzpos;
-            //                return;
-            //            }
-
-            // Compute the numerator and denominator for computing d.
-            double numerator = planeNormal.dot(p1.minus(linePoint0));
-            double denominator = planeNormal.dot(linePoint1.minus(linePoint0));
-
-            // If the denominator is zero, there is no intersection so skip to checking the next plane.
-            if(denominator == 0){ continue; }
-
-            // Compute d, the parameter value on the line of the point of intersection.
-            double d = numerator / denominator;
-
             // Compute the point of intersection.
             MyPoint intersectionPoint;
 
@@ -373,44 +348,37 @@ void OriginWindow::updatePlayerPosition()
             // If program execution gets here, there is no collision, so allow the player's position to be updated.
         }
     }
-}
 
-/*
- P is the point of possible intersection.
- The triangle is set up like so:
- b
- | \
- a--C
- */
-bool OriginWindow::pointInsideTriangle(MyPoint& p, MyPoint& a, MyPoint& b, MyPoint& c)
-{
-    // Create the vectors to use for the triangle.
-    MyPoint v0 = c.minus(a);
-    MyPoint v1 = b.minus(a);
-    MyPoint v2 = p.minus(a);
-
-    // Compute the dot products to use for changing to barycentric coordinates.
-    float dotv0v0 = v0.dot(v0);
-    float dotv0v1 = v0.dot(v1);
-    float dotv0v2 = v0.dot(v2);
-    float dotv1v1 = v1.dot(v1);
-    float dotv1v2 = v1.dot(v2);
-
-    // Compute barycentric coordinates u and v.
-    float u, v;
-    float denominator = dotv0v0 * dotv1v1 - dotv0v1 * dotv0v1;
-
-    if(denominator != 0)
+    // Check for collisions with each prop in the scene.
+    for(int i=0; i<scene.propcount; i++)
     {
-        u = (dotv1v1 * dotv0v2 - dotv0v1 * dotv1v2)/denominator;
-        v = (dotv0v0 * dotv1v2 - dotv0v1 * dotv0v2)/denominator;
-    }else
-    {
-        printf("Denominator of barycentric coordinate conversion was zero.");
-        return true;
+        MyObject prop = scene.prop[i];
+
+        // Check for collisions with each triangular plane of the prop.
+        for(int j=0; j<prop.nPlanes; j++)
+        {
+            // Get the triangular plane.
+            MyPlane plane = prop.planes[j];
+
+            // Get points on the triangular plane.
+            MyPoint p1 = prop.points[plane.pids[0]];
+            MyPoint p2 = prop.points[plane.pids[1]];
+            MyPoint p3 = prop.points[plane.pids[2]];
+
+            // Compute the point of intersection.
+            MyPoint intersectionPoint;
+
+            // Check that the intersection point is within the triangular plane:
+            if(CheckLineTri(p1, p2, p3, linePoint0, linePoint1, intersectionPoint))
+            {
+                // There is a collision, so reset the position to the last position.
+                xpos = oldxpos;
+                zpos = oldzpos;
+                return;
+            }
+            // If program execution gets here, there is no collision, so allow the player's position to be updated.
+        }
     }
-
-    return (0 < u) && (0 < v) && (u + v < 1);
 }
 
 bool OriginWindow::CheckLineTri(MyPoint& TP1, MyPoint& TP2, MyPoint& TP3, MyPoint& LP1, MyPoint& LP2, MyPoint& HitPos)
