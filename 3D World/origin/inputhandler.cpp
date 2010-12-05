@@ -12,7 +12,7 @@ void OriginWindow::applyTransformation()
         return;
 
     // if no prop is selected, do nothing
-    int propIndex = 0;//scene.selectedProp;
+    int propIndex = scene.selectedProp;
     if (propIndex == NO_SELECTION)
         return;
 
@@ -44,7 +44,7 @@ void OriginWindow::applyRotation()
         return;
 
     // if no prop is selected, do nothing
-    int propIndex = 0;//scene.selectedProp;
+    int propIndex = scene.selectedProp;
     if (propIndex == NO_SELECTION)
         return;
 

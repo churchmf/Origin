@@ -151,8 +151,20 @@ void OriginWindow::paintGL()
         // Scale the object.
         glScalef(scale.x,scale.y,scale.z);
 
+        if (i == scene.selectedProp)
+        {
+            glEnable(GL_BLEND);
+            glDisable(GL_DEPTH_TEST);
+        }
+
         // Draw the object.
         object.draw();
+
+        if (i == scene.selectedProp)
+        {
+            glEnable(GL_DEPTH_TEST);
+            glDisable(GL_BLEND);
+        }
 
         // Discard matrix changes.
         glPopMatrix();
@@ -264,10 +276,12 @@ void OriginWindow::selectProp()
 
     MyPoint p2 = p1.plus((gaze.times(INF)));
 
-    printf("p1: %f,%f,%f \n", p1.x,p1.y,p1.z);
-    printf("gaze: %f,%f,%f \n", gaze.x,gaze.y,gaze.z);
-    printf("p2: %f,%f,%f \n", p2.x,p2.y,p2.z);
+    //printf("p1: %f,%f,%f \n", p1.x,p1.y,p1.z);
+    //printf("gaze: %f,%f,%f \n", gaze.x,gaze.y,gaze.z);
+    //printf("p2: %f,%f,%f \n", p2.x,p2.y,p2.z);
 
+    int closestIndex = NO_SELECTION;
+    float closestDist = INF;
     for(int i=0; i<scene.propcount; i++)
     {
         // Create a reference to the prop.
@@ -281,12 +295,22 @@ void OriginWindow::selectProp()
             MyPoint B = o.points[plane.pids[1]];
             MyPoint C = o.points[plane.pids[2]];
 
+            // cast a ray and collide with any props
             MyPoint t;
             if (CheckLineTri(A,B,C,p1,p2,t))
             {
-                printf("select! \n");
+                //printf("select! %f,%f,%f\n",t.x,t.y,t.z);
+
+                //get the closest prop
+                float dist = t.length(p1);
+                if (dist < closestDist)
+                {
+                    closestDist = dist;
+                    closestIndex = i;
+                }
             }
         }
+        scene.selectedProp = closestIndex;
     }
 }
 
@@ -397,7 +421,7 @@ void OriginWindow::updatePlayerPosition()
         MyObject prop = scene.prop[i];
 
         // Check for collisions with each triangular plane of the prop.
-        for(int j=0; j<prop.nPlanes; j++)
+        for(unsigned int j=0; j<prop.nPlanes; j++)
         {
             // Get the triangular plane.
             MyPlane plane = prop.planes[j];
