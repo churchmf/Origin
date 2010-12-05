@@ -26,6 +26,13 @@ void VMatMult(GLmatrix16f M, GLvector4f v);
 
 // point/vector in 3d-coordinate system
 struct MyPoint{
+    MyPoint()
+    {
+        x=0;
+        y=0;
+        z=0;
+    }
+
     //fields
     float x, y, z;
     //methods

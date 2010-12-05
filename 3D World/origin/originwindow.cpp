@@ -90,7 +90,7 @@ void OriginWindow::paintGL()
         MyObject& object = scene.obj[i];
 
         // Get the position to draw it at.
-        //MyPoint& position = object.position;
+        MyPoint& position = object.position;
 
         // Get the rotation to rotate the object by.
         //MyPoint& rotation = object.rotation;
@@ -102,7 +102,7 @@ void OriginWindow::paintGL()
         glPushMatrix();
 
         // Translate the origin to the point's position?
-        //glTranslatef(position.x, position.y, position.z);
+        glTranslatef(position.x, position.y, position.z);
 
         // Rotate the object.
         //glRotatef(-rotation.x, 1.0, 0.0, 0.0);
@@ -138,7 +138,7 @@ void OriginWindow::paintGL()
         glPushMatrix();
 
         // Translate the origin to the point's position.
-        //glTranslatef(position.x, position.y, position.z);
+        glTranslatef(position.x, position.y, position.z);
 
         // Rotate the object.
         glRotatef(-rotation.x, 1.0, 0.0, 0.0);
@@ -151,6 +151,7 @@ void OriginWindow::paintGL()
         // Scale the object.
         glScalef(scale.x,scale.y,scale.z);
 
+        // Enable blending on the selectedProp
         if (i == scene.selectedProp)
         {
             glEnable(GL_BLEND);
@@ -160,6 +161,7 @@ void OriginWindow::paintGL()
         // Draw the object.
         object.draw();
 
+        // Disable blending effects
         if (i == scene.selectedProp)
         {
             glEnable(GL_DEPTH_TEST);
@@ -191,9 +193,9 @@ void OriginWindow::drawAxis()
     gluOrtho2D(0,this->width(),0, this->height());
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
-    double l = 24;
-    double cx = 32;
-    double cy = 32;
+    double l = 32;
+    double cx = 48;
+    double cy = 48;
     double xx, xy, yx, yy , zx, zy;
     float fvViewMatrix[ 16 ];
     glGetFloatv( GL_MODELVIEW_MATRIX, fvViewMatrix );
@@ -291,9 +293,9 @@ void OriginWindow::selectProp()
         {
             //calculate the plane normal
             MyPlane& plane = o.planes[j];
-            MyPoint A = o.points[plane.pids[0]];
-            MyPoint B = o.points[plane.pids[1]];
-            MyPoint C = o.points[plane.pids[2]];
+            MyPoint A = o.points[plane.pids[0]].plus(o.position);
+            MyPoint B = o.points[plane.pids[1]].plus(o.position);
+            MyPoint C = o.points[plane.pids[2]].plus(o.position);
 
             // cast a ray and collide with any props
             MyPoint t;
@@ -395,10 +397,13 @@ void OriginWindow::updatePlayerPosition()
             // Get the triangular plane.
             MyPlane plane = object.planes[j];
 
+            // Get the object's position.
+            MyPoint objectPos = object.position;
+
             // Get points on the triangular plane.
-            MyPoint p1 = object.points[plane.pids[0]];
-            MyPoint p2 = object.points[plane.pids[1]];
-            MyPoint p3 = object.points[plane.pids[2]];
+            MyPoint p1 = object.points[plane.pids[0]].plus(objectPos);
+            MyPoint p2 = object.points[plane.pids[1]].plus(objectPos);
+            MyPoint p3 = object.points[plane.pids[2]].plus(objectPos);
 
             // Compute the point of intersection.
             MyPoint intersectionPoint;
@@ -426,10 +431,13 @@ void OriginWindow::updatePlayerPosition()
             // Get the triangular plane.
             MyPlane plane = prop.planes[j];
 
+            // Get the object's position.
+            MyPoint propPos = prop.position;
+
             // Get points on the triangular plane.
-            MyPoint p1 = prop.points[plane.pids[0]];
-            MyPoint p2 = prop.points[plane.pids[1]];
-            MyPoint p3 = prop.points[plane.pids[2]];
+            MyPoint p1 = prop.points[plane.pids[0]].plus(propPos);
+            MyPoint p2 = prop.points[plane.pids[1]].plus(propPos);
+            MyPoint p3 = prop.points[plane.pids[2]].plus(propPos);
 
             // Compute the point of intersection.
             MyPoint intersectionPoint;

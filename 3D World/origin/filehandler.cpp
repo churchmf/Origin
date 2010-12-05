@@ -223,10 +223,20 @@ void OriginWindow::readObject(QFile* file, MyObject& o)
         MyPoint center;
         for (int i=0; i<pointNum; i++)
         {
-            center = center.plus(o.points[i]);
+            MyPoint& point = o.points[i];
+            center = center.plus(point);
         }
+        //set the position of the object
         o.position = center.divide(pointNum);
         o.goalPosition = o.position;
+        //adjust points to be relative to the object position (instead of the world)
+        for (int i=0; i<pointNum; i++)
+        {
+            MyPoint& point = o.points[i];
+            point.x = point.x - o.position.x;
+            point.y = point.y - o.position.y;
+            point.z = point.z - o.position.z;
+        }
     }
 }
 
