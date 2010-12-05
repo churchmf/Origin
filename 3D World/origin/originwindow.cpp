@@ -73,7 +73,7 @@ void OriginWindow::paintGL()
 
     GLfloat xtrans = -xpos;
     GLfloat ztrans = -zpos;
-    GLfloat ytrans = -walkbias-0.25f;
+    GLfloat ytrans = -ypos; //-walkbias-0.25f
     GLfloat sceneroty = yrot;
 
     glRotatef(lookupdown,1.0f,0,0);
@@ -227,6 +227,45 @@ void OriginWindow::drawAxis()
 
 void OriginWindow::drawCrosshair()
 {
+    /*
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    gluOrtho2D(0,this->width(),0, this->height());
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    double l = 32;
+    double cx = this->width()/2;
+    double cy = this->height()/2;
+    glLoadIdentity();
+
+    // Save the current colour for later.
+    glPushAttrib(GL_CURRENT_BIT);
+
+    // Disable textures temporarily.
+    glEnable(GL_TEXTURE_2D);
+
+    glEnable(GL_BLEND);
+    glBindTexture(GL_TEXTURE_2D, texture[0]);                           // Select The Correct Texture
+    glBegin(GL_QUADS);
+    glTexCoord2f(0.0f,0.0f); glVertex2f(cx,cy);                    // Bottom Left
+    glTexCoord2f(1.0f,0.0f); glVertex2f(cx+l,cy);                    // Bottom Right
+    glTexCoord2f(1.0f,1.0f); glVertex2f(cx+l, cy+l);                    // Top Right
+    glTexCoord2f(0.0f,1.0f); glVertex2f(cx, cy+l);                    // Top Left
+    glDisable(GL_BLEND);
+
+    // Disable textures temporarily.
+    glDisable(GL_TEXTURE_2D);
+
+    // Restore the old colour.
+    glPopAttrib();
+
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+    */
+
     // Crosshair (In Ortho View)					// Store The Projection Matrix
     glPushMatrix();
     glLoadIdentity();							// Reset The Projection Matrix
@@ -252,7 +291,7 @@ void OriginWindow::selectProp()
 {
     MyPoint p1;
     p1.x = xpos;
-    p1.y = walkbias+0.25f;
+    p1.y = ypos; //walkbias+0.25f;
     p1.z = zpos;
 
     MyPoint gaze;
@@ -326,7 +365,7 @@ bool OriginWindow::checkCollisionWithAll(QList<MyPoint> before, MyPoint& delta)
         for(int j=0; j<scene.objcount; j++)
         {
             // Get the Object.
-            MyObject& sceneObject = scene.obj[i];
+            MyObject& sceneObject = scene.obj[j];
 
             // Check for collisions with each triangular plane of the object.
             for(unsigned int k=0; k<sceneObject.nPlanes; k++)
@@ -353,25 +392,25 @@ bool OriginWindow::checkCollisionWithAll(QList<MyPoint> before, MyPoint& delta)
             }
         }
 
-        // Check for collisions with each prop in the scene.
+        // Check for collisions with each object in the scene.
         for(int j=0; j<scene.propcount; j++)
         {
             // Get the Object.
-            MyObject& prop = scene.prop[i];
+            MyObject& sceneProp = scene.prop[j];
 
             // Check for collisions with each triangular plane of the object.
-            for(unsigned int k=0; k<prop.nPlanes; k++)
+            for(unsigned int k=0; k<sceneProp.nPlanes; k++)
             {
                 // Get the triangular plane.
-                MyPlane plane = prop.planes[k];
+                MyPlane plane = sceneProp.planes[k];
 
                 // Get the sceneObject's position.
-                MyPoint propPos = prop.position;
+                MyPoint objectPos = sceneProp.position;
 
                 // Get points on the triangular plane.
-                MyPoint p1 = prop.points[plane.pids[0]].plus(propPos);
-                MyPoint p2 = prop.points[plane.pids[1]].plus(propPos);
-                MyPoint p3 = prop.points[plane.pids[2]].plus(propPos);
+                MyPoint p1 = sceneProp.points[plane.pids[0]].plus(objectPos);
+                MyPoint p2 = sceneProp.points[plane.pids[1]].plus(objectPos);
+                MyPoint p3 = sceneProp.points[plane.pids[2]].plus(objectPos);
 
                 // Compute the point of intersection.
                 MyPoint intersectionPoint;
@@ -422,6 +461,7 @@ void OriginWindow::updatePlayerPosition()
         }
         walkbias = (float)sin(walkbiasangle * piover180)/50.0f;
     }
+    ypos = walkbias+0.25f;
     if (keysPressed.a)
     {
         xpos -= (float)cos(heading*piover180) * 0.03f;
@@ -431,6 +471,10 @@ void OriginWindow::updatePlayerPosition()
     {
         xpos += (float)cos(heading*piover180) * 0.03f;
         zpos += (float)sin(heading*piover180) * 0.03f;
+    }
+    if (keysPressed.space)
+    {
+        ypos += JUMP_STEP;
     }
 
     // Exit early if there's no movement.

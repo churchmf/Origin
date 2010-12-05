@@ -85,13 +85,16 @@ private:
     QTableWidget* transformationTable;
     QComboBox* transformationSelector;
 
+    //camera variables
     GLfloat heading;
     GLfloat xpos;
     GLfloat zpos;
+    GLfloat ypos;
     GLfloat yrot;
     GLfloat walkbias;
     GLfloat walkbiasangle;
     GLfloat lookupdown;
+    MyPoint camVelocity;
 
     GLuint texture[MAX_TEXTURES];
     int textureCount;
