@@ -183,10 +183,6 @@ void OriginWindow::updateKeyState(int key, bool isPressed)
     {
         keysPressed.space = isPressed;
     }
-    else if (key == Qt::Key_E)
-    {
-        keysPressed.e = isPressed;
-    }
 }
 
 void OriginWindow::keyPressEvent( QKeyEvent *e )
@@ -206,8 +202,12 @@ void OriginWindow::keyPressEvent( QKeyEvent *e )
     {
         applyRotation();
     }
+    else if (key == Qt::Key_E)
+    {
+        selectProp();
+    }
     else if (key == Qt::Key_O)
     {
-        OriginWindow::loadLevel();
+        loadLevel();
     }
 }

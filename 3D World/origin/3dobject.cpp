@@ -40,6 +40,7 @@ float MyPoint::dot(MyPoint op2){
     res.z = z * op2.z;
     return res.x+ res.y+ res.z;
 }
+
 //scalar multiplication
 MyPoint MyPoint::times(float c){
     MyPoint res;
@@ -58,13 +59,13 @@ MyPoint MyPoint::scale(MyPoint p2){
 }
 
 MyPoint MyPoint::divide(float c)
- {
-     MyPoint res;
-     res.x= x/c;
-     res.y= y/c;
-     res.z= z/c;
-     return res;
- }
+{
+    MyPoint res;
+    res.x= x/c;
+    res.y= y/c;
+    res.z= z/c;
+    return res;
+}
 
 float MyPoint::length(MyPoint p2)
 {
@@ -100,14 +101,12 @@ MyPoint MyPoint::normalize(){
     MyPoint res= times(1.0f/len);
     return res;
 }
+
 /*END *********** MyPoint methods*/
 void MyObject::draw()
 {
     //Bind the texture
     glBindTexture(GL_TEXTURE_2D, this->material.texture);
-
-    // Get the object's colour from it's material
-    //glColor3f(this->material.kd.red(),this->material.kd.green(),this->material.kd.blue());
 
     // For each plane,
     for(unsigned int i=0; i<nPlanes; i++){

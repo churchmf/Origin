@@ -55,6 +55,8 @@ struct MyPlane{
     unsigned int nids[MAX_PLANE_POINTS];		//id of normals of this plane
     unsigned int neigh[MAX_PLANE_POINTS];		//neighbor planes
     bool islit;                                         //is it facing the light?
+
+    MyPoint getNormal();
 };
 
 struct MyMaterial{

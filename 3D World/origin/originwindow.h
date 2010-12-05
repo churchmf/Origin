@@ -16,6 +16,7 @@
 #define MIN_WIDTH 800
 #define MIN_HEIGHT 600
 #define MAX_TEXTURES 15
+const float INF = 10;
 
 // This constant protects against rounding errors that could otherwise arise during collision detection.
 const double zeroCutoff = 1e-10;
@@ -27,7 +28,7 @@ enum RotationAxis { RotateByX, RotateByY, RotateByZ };
 
 // track the keystate since Qt is ghetto
 typedef struct {
-    bool w,a,s,d,space,e;
+    bool w,a,s,d,space;
 } KeyState;
 
 class OriginWindow : public QGLWidget
@@ -57,8 +58,8 @@ protected:
     void updatePropsRotation();
     void updatePropsScale();
 
-    //Check collisions
-    bool checkCollision(MyObject& object1);
+    //Select active prop
+    void selectProp();
     bool pointInsideTriangle(MyPoint& p, MyPoint& a, MyPoint& b, MyPoint& c);
     bool CheckLineTri(MyPoint& TP1, MyPoint& TP2, MyPoint& TP3, MyPoint& LP1, MyPoint& LP2, MyPoint& HitPos);
 
@@ -93,9 +94,9 @@ private:
 
     void loadLevel();
 
-    void readObject(QFile* file, MyObject& o);  //read .obj file
+    void readObject(QFile* file, MyObject& o);      //read .obj file
     void readMaterial(QFile* file, MyObject& o);    //read .mtl file for .obj file
-    GLuint& readTexture(QString fileLocation);    //read texture from .mtl file, returns the index of the texture
+    GLuint& readTexture(QString fileLocation);      //read texture from .mtl file, returns the index of the texture
 
     void drawHUD();
     void drawCrosshair();

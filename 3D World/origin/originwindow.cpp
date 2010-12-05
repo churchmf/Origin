@@ -145,11 +145,11 @@ void OriginWindow::paintGL()
         glRotatef(-rotation.y, 0.0, 1.0, 0.0);
         glRotatef(-rotation.z, 0.0, 0.0, 1.0);
 
-        // Scale the object.
-        glScalef(scale.x,scale.y,scale.z);
-
         // Translate back
         //glTranslatef(-position.x, -position.y, -position.z);
+
+        // Scale the object.
+        glScalef(scale.x,scale.y,scale.z);
 
         // Draw the object.
         object.draw();
@@ -250,6 +250,48 @@ void OriginWindow::drawCrosshair()
     glPopMatrix();
 }
 
+void OriginWindow::selectProp()
+{
+    MyPoint p1;
+    p1.x = xpos;
+    p1.y = walkbias+0.25f;
+    p1.z = zpos;
+
+    MyPoint gaze;
+    gaze.x = (float)sin(heading*piover180);
+    gaze.y = -(float)sin(lookupdown * piover180);
+    gaze.z = -(float)cos(heading*piover180);
+
+    MyPoint p2 = p1.plus((gaze.times(INF)));
+
+    printf("p1: %f,%f,%f \n", p1.x,p1.y,p1.z);
+    printf("gaze: %f,%f,%f \n", gaze.x,gaze.y,gaze.z);
+    printf("p2: %f,%f,%f \n", p2.x,p2.y,p2.z);
+
+    for(int i=0; i<scene.propcount; i++)
+    {
+        // Create a reference to the prop.
+        MyObject& o = scene.prop[i];
+
+        for (unsigned int j=0; j <o.nPlanes; j++)
+        {
+            //calculate the plane normal
+            MyPlane& plane = o.planes[j];
+            MyPoint A = o.points[plane.pids[0]];
+            MyPoint B = o.points[plane.pids[1]];
+            MyPoint C = o.points[plane.pids[2]];
+
+            MyPoint t;
+            if (CheckLineTri(A,B,C,p1,p2,t))
+            {
+                printf("select! \n");
+            }
+        }
+    }
+}
+
+
+
 void OriginWindow::updatePlayerPosition()
 {
     // Keep track of the old x and z positions for collision detection purposes.
@@ -324,7 +366,7 @@ void OriginWindow::updatePlayerPosition()
         MyObject object = scene.obj[i];
 
         // Check for collisions with each triangular plane of the object.
-        for(int j=0; j<object.nPlanes; j++)
+        for(unsigned int j=0; j<object.nPlanes; j++)
         {
             // Get the triangular plane.
             MyPlane plane = object.planes[j];
@@ -412,26 +454,6 @@ bool OriginWindow::CheckLineTri(MyPoint& TP1, MyPoint& TP2, MyPoint& TP3, MyPoin
     return true;
 }
 
-
-bool OriginWindow::checkCollision(MyObject& object1)
-{
-    bool hasCollision = false;
-    unsigned int numFaces = object1.nPlanes;
-    // Check for collisions with each object in the scene
-    for(int i=0; i<scene.objcount; i++)
-    {
-        // Get the Object.
-        MyObject& object2 = scene.obj[i];
-
-    }
-    for (int i=0; i<scene.propcount; i++)
-    {
-        // Get the Object.
-        MyObject& object2 = scene.prop[i];
-    }
-    return false;
-}
-
 void OriginWindow::updatePropsPosition()
 {
     for(int i=0; i<scene.propcount; i++)
@@ -442,10 +464,8 @@ void OriginWindow::updatePropsPosition()
         MyPoint& curPosition = o.position;
 
         // If the prop is near the goal, do nothing
-        if (curPosition.isNear(goal))
-        {
-            curPosition = goal;
-        }
+        if (curPosition.equals(goal))
+            continue;
 
         // Otherwise, get the direction to move
         MyPoint diff = goal.minus(curPosition);
