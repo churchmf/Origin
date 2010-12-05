@@ -106,6 +106,10 @@ void OriginWindow::paintGL()
     // Draw the props stored in scene.
     for(int i=0; i<scene.propcount; i++)
     {
+        // Skip the selectedProp
+        if (i == scene.selectedProp)
+            continue;
+
         // Get the object to draw.
         MyObject& object = scene.prop[i];
 
@@ -135,26 +139,62 @@ void OriginWindow::paintGL()
         // Scale the object.
         glScalef(scale.x,scale.y,scale.z);
 
+        // Draw the object.
+        object.draw();
+
+        // Discard matrix changes.
+        glPopMatrix();
+    }
+
+    //draw the selected prop with blending
+    ////////////////////////////////////////////////
+    if (scene.selectedProp != NO_SELECTION)
+    {
+        // Get the object to draw.
+        MyObject& object = scene.prop[scene.selectedProp];
+
+        // Get the position to draw it at.
+        MyPoint& position = object.position;
+
+        // Get the rotation to rotate the object by.
+        MyPoint& rotation = object.rotation;
+
+        // Get the scale.
+        MyPoint& scale = object.scale;
+
+        // Make a copy of the current matrix on top of the stack.
+        glPushMatrix();
+
+        // Translate the origin to the point's position.
+        glTranslatef(position.x, position.y, position.z);
+
+        // Rotate the object.
+        glRotatef(-rotation.x, 1.0, 0.0, 0.0);
+        glRotatef(-rotation.y, 0.0, 1.0, 0.0);
+        glRotatef(-rotation.z, 0.0, 0.0, 1.0);
+
+        // Translate back
+        //glTranslatef(-position.x, -position.y, -position.z);
+
+        // Scale the object.
+        glScalef(scale.x,scale.y,scale.z);
+
         // Enable blending on the selectedProp
-        if (i == scene.selectedProp)
-        {
-            glEnable(GL_BLEND);
-            glDisable(GL_DEPTH_TEST);
-        }
+        glEnable(GL_BLEND);
+        glDisable(GL_DEPTH_TEST);
 
         // Draw the object.
         object.draw();
 
         // Disable blending effects
-        if (i == scene.selectedProp)
-        {
-            glEnable(GL_DEPTH_TEST);
-            glDisable(GL_BLEND);
-        }
+        glEnable(GL_DEPTH_TEST);
+        glDisable(GL_BLEND);
 
         // Discard matrix changes.
         glPopMatrix();
     }
+    ////////////////////////////////////////
+
 
     //Draw the HUD
     drawHUD();
