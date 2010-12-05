@@ -12,9 +12,10 @@ This file is borrowed from Assignment3 of CMPUT411 at the University of Alberta.
 #define MAX_OBJECT_PLANES 100
 #define MAX_OBJECT_NORMALS 100
 #define MAX_PLANE_POINTS 10
-#define PROP_TRANSFORM_STEP 0.01f
+#define PROP_TRANSLATE_STEP 0.01f
 #define PROP_ROTATE_STEP 0.01f
 #define PROP_SCALE_STEP 0.01f
+#define GRAVITY_STEP    -0.01f
 
 typedef float GLvector4f[4];		// Typedef's For VMatMult Procedure
 typedef float GLmatrix16f[16];		// Typedef's For VMatMult Procedure
@@ -32,7 +33,6 @@ struct MyPoint{
         y=0;
         z=0;
     }
-
     //fields
     float x, y, z;
     //methods
@@ -43,7 +43,6 @@ struct MyPoint{
     MyPoint times(float c);
     float length(MyPoint p2);
     bool equals(MyPoint p2);
-    bool isNear(MyPoint p2);
     MyPoint plus(MyPoint p2);
     MyPoint scale(MyPoint p2);
     MyPoint divide(float c);
@@ -55,15 +54,10 @@ struct MyUV {
 
 // structure describing an object's face
 struct MyPlane{
-    MyPoint color;					//plane color
     unsigned int nPoints;				//vertices in plane
     unsigned int pids[MAX_PLANE_POINTS];		//id of points of this plane
     unsigned int tids[MAX_PLANE_POINTS];		//id of textureCoords of this plane
     unsigned int nids[MAX_PLANE_POINTS];		//id of normals of this plane
-    unsigned int neigh[MAX_PLANE_POINTS];		//neighbor planes
-    bool islit;                                         //is it facing the light?
-
-    MyPoint getNormal();
 };
 
 struct MyMaterial{
@@ -117,12 +111,13 @@ struct MyObject{
     MyPoint goalScale;                                 //goal scale
     MyPoint goalRotation;                              //goal rotation
 
-
     MyMaterial material;                               //object's material
+
+    bool isTransforming;  //indicates if the object is tranforming
+    MyPoint velocity;      //velocity of the object
 
     //methods
     void draw();					//draw object
-    //void scale(MyPoint k);                            //scale an object(x,y,z) by the point(kx,ky,kz)
 };
 
 

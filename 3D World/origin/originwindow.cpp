@@ -37,8 +37,6 @@ void OriginWindow::initializeGL()
     // Load in the HUD textures
     QString crosshairTexture = "../images/crosshair.bmp";
     this->readTexture(crosshairTexture);
-    QString axisTexture = "../images/axis.bmp";
-    this->readTexture(axisTexture);
 
     glEnable(GL_TEXTURE_2D);
     glBlendFunc(GL_SRC_ALPHA,GL_ONE);
@@ -92,25 +90,11 @@ void OriginWindow::paintGL()
         // Get the position to draw it at.
         MyPoint& position = object.position;
 
-        // Get the rotation to rotate the object by.
-        //MyPoint& rotation = object.rotation;
-
-        // Get the object scale
-        //MyPoint& scale = object.scale;
-
         // Make a copy of the current matrix on top of the stack.
         glPushMatrix();
 
         // Translate the origin to the point's position?
         glTranslatef(position.x, position.y, position.z);
-
-        // Rotate the object.
-        //glRotatef(-rotation.x, 1.0, 0.0, 0.0);
-        //glRotatef(-rotation.y, 0.0, 1.0, 0.0);
-        //glRotatef(-rotation.z, 0.0, 0.0, 1.0);
-
-        // Scale the object.
-        //glScalef(scale.x,scale.y,scale.z);
 
         // Draw the object.
         object.draw();
@@ -202,7 +186,7 @@ void OriginWindow::drawAxis()
     glLoadIdentity();
     xx = l * fvViewMatrix[0];
     xy = l * fvViewMatrix[1];
-    yx = l * fvViewMatrix[4];
+    yx = -l * fvViewMatrix[4];
     yy = l * fvViewMatrix[5];
     zx = l * fvViewMatrix[8];
     zy = l * fvViewMatrix[9];
@@ -316,6 +300,91 @@ void OriginWindow::selectProp()
     }
 }
 
+bool OriginWindow::checkCollisionWithAll(QList<MyPoint> before, MyPoint& delta)
+{
+    // Assume the same number of points before and after the move
+    int numPoints = before.size();
+
+    // Compute the new position for each point
+    QList<MyPoint> after;
+    for (int i=0;i < numPoints; i++)
+    {
+        MyPoint afterTransformation;
+        afterTransformation.x = before.x + delta.x;
+        afterTransformation.y = before.y + delta.y;
+        afterTransformation.z = before.z + delta.z;
+        after.append(afterTransformation);
+    }
+
+    // Check if there is a collision between any of the points and any objects
+    for (int i=0; i < numPoints; i++)
+    {
+        MyPoint linePoint0 = before.at(i);
+        MyPoint linePoint1 = after.at(i);
+
+        // Check for collisions with each object in the scene.
+        for(int j=0; j<scene.objcount; j++)
+        {
+            // Get the Object.
+            MyObject& sceneObject = scene.obj[i];
+
+            // Check for collisions with each triangular plane of the object.
+            for(unsigned int k=0; k<sceneObject.nPlanes; j++)
+            {
+                // Get the triangular plane.
+                MyPlane plane = sceneObject.planes[j];
+
+                // Get the sceneObject's position.
+                MyPoint objectPos = sceneObject.position;
+
+                // Get points on the triangular plane.
+                MyPoint p1 = sceneObject.points[plane.pids[0]].plus(objectPos);
+                MyPoint p2 = sceneObject.points[plane.pids[1]].plus(objectPos);
+                MyPoint p3 = sceneObject.points[plane.pids[2]].plus(objectPos);
+
+                // Compute the point of intersection.
+                MyPoint intersectionPoint;
+
+                // Check that the intersection point is within the boundaries of the triangular plane:
+                if(CheckLineTri(p1, p2, p3, linePoint0, linePoint1, intersectionPoint))
+                {
+                    return true;
+                }
+            }
+        }
+
+        // Check for collisions with each prop in the scene.
+        for(int i=0; i<scene.propcount; i++)
+        {
+            MyObject prop = scene.prop[i];
+
+            // Check for collisions with each triangular plane of the prop.
+            for(unsigned int j=0; j<prop.nPlanes; j++)
+            {
+                // Get the triangular plane.
+                MyPlane plane = prop.planes[j];
+
+                // Get the object's position.
+                MyPoint propPos = prop.position;
+
+                // Get points on the triangular plane.
+                MyPoint p1 = prop.points[plane.pids[0]].plus(propPos);
+                MyPoint p2 = prop.points[plane.pids[1]].plus(propPos);
+                MyPoint p3 = prop.points[plane.pids[2]].plus(propPos);
+
+                // Compute the point of intersection.
+                MyPoint intersectionPoint;
+
+                // Check that the intersection point is within the triangular plane:
+                if(CheckLineTri(p1, p2, p3, linePoint0, linePoint1, intersectionPoint))
+                {
+                    return true;
+                }
+            }
+        }
+    }
+}
+
 
 
 void OriginWindow::updatePlayerPosition()
@@ -357,7 +426,6 @@ void OriginWindow::updatePlayerPosition()
     {
         xpos -= (float)cos(heading*piover180) * 0.03f;
         zpos -= (float)sin(heading*piover180) * 0.03f;
-
     }
     if (keysPressed.d)
     {
@@ -495,18 +563,23 @@ void OriginWindow::updatePropsPosition()
         MyPoint& goal = o.goalPosition;
         MyPoint& curPosition = o.position;
 
-        // If the prop is near the goal, do nothing
-        if (curPosition.equals(goal))
-            continue;
+        // If the prop is not near the goal
+        if (!curPosition.equals(goal))
+        {
+            // Get the direction to move
+            MyPoint diff = goal.minus(curPosition);
+            diff.normalize();
 
-        // Otherwise, get the direction to move
-        MyPoint diff = goal.minus(curPosition);
-        diff.normalize();
-
-        // Move towards the goal
-        curPosition.x += diff.x * PROP_TRANSFORM_STEP;
-        curPosition.y += diff.y * PROP_TRANSFORM_STEP;
-        curPosition.z += diff.z * PROP_TRANSFORM_STEP;
+            // Move towards the goal
+            curPosition.x += diff.x * PROP_TRANSLATE_STEP;
+            curPosition.y += diff.y * PROP_TRANSLATE_STEP;
+            curPosition.z += diff.z * PROP_TRANSLATE_STEP;
+        }
+        else
+        {
+            //Update prop's position with physics
+            applyPhysics(o);
+        }
     }
 }
 
@@ -519,18 +592,23 @@ void OriginWindow::updatePropsRotation()
         MyPoint& goal = o.goalRotation;
         MyPoint& curRotation = o.rotation;
 
-        // If the prop is near the goal, do nothing
-        if (curRotation.equals(goal))
-            continue;
+        // If the prop is not near the goal
+        if (!curRotation.equals(goal))
+        {
+            // Get the direction to move
+            MyPoint diff = goal.minus(curRotation);
+            diff.normalize();
 
-        // Otherwise, get the direction to move
-        MyPoint diff = goal.minus(curRotation);
-        diff.normalize();
-
-        // Rotate towards the goal
-        curRotation.x += diff.x * PROP_ROTATE_STEP;
-        curRotation.y += diff.y * PROP_ROTATE_STEP;
-        curRotation.z += diff.z * PROP_ROTATE_STEP;
+            // Rotate towards the goal
+            curRotation.x += diff.x * PROP_ROTATE_STEP;
+            curRotation.y += diff.y * PROP_ROTATE_STEP;
+            curRotation.z += diff.z * PROP_ROTATE_STEP;
+        }
+        else
+        {
+            //Update prop's position with physics
+            applyPhysics(o);
+        }
     }
 }
 
@@ -543,18 +621,54 @@ void OriginWindow::updatePropsScale()
         MyPoint& goal = o.goalScale;
         MyPoint& curScale = o.scale;
 
-        // If the prop is near the goal, do nothing
-        if (curScale.equals(goal))
+        // If the prop is not near the goal
+        if (!curScale.equals(goal))
+        {
+            // Get the direction to move
+            MyPoint diff = goal.minus(curScale);
+            diff.normalize();
+
+            // Scale towards the goal
+            curScale.x += diff.x * PROP_SCALE_STEP;
+            curScale.y += diff.y * PROP_SCALE_STEP;
+            curScale.z += diff.z * PROP_SCALE_STEP;
+        }
+        else
+        {
+            //Update prop's position with physics
+            applyPhysics(o);
+        }
+    }
+}
+
+void OriginWindow::applyPhysics(MyObject& o)
+{
+    // Don't apply physics to transforming objects
+    if (o.isTransforming)
+        return;
+
+    // apply gravity
+    o.velocity.y = o.velocity.y + GRAVITY_STEP;
+
+    //adjust position
+    curPosition.x += o.velocity.x;
+    curPosition.y += o.velocity.y;
+    curPosition.z += o.velocity.z;
+}
+
+void OriginWindow::updateIsTransforming()
+{
+    for(int i=0; i<scene.propcount; i++)
+    {
+        // Create a reference to the prop.
+        MyObject& o = scene.prop[i];
+
+        // Don't worry about non-transforming objects
+        if (!o.isTransforming)
             continue;
 
-        // Otherwise, get the direction to move
-        MyPoint diff = goal.minus(curScale);
-        diff.normalize();
-
-        // Scale towards the goal
-        curScale.x += diff.x * PROP_SCALE_STEP;
-        curScale.y += diff.y * PROP_SCALE_STEP;
-        curScale.z += diff.z * PROP_SCALE_STEP;
+        // The object is transforming if it is not at it's goal
+        o.isTransforming = !(o.goalPosition.equals(o.position) && o.goalRotation.equals(o.rotation) && o.goalScale.equals(o.scale));
     }
 }
 
@@ -572,6 +686,9 @@ void OriginWindow::timerLoop()
 
     //Update the props' scale
     updatePropsScale();
+
+    //Update isTransforming for all props
+    updateIsTransforming();
 
     //UpdateGL
     updateGL();

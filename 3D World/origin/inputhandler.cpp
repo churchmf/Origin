@@ -21,7 +21,8 @@ void OriginWindow::applyTransformation()
     if (type == Translate)
     {
         selectedProp.goalPosition = (selectedProp.position).plus(transformation);
-        printf("Translate\n");
+        selectedProp.isTransforming = true;
+        //printf("Translate\n");
     }
     //Scale
     else if (type == Scale)
@@ -29,7 +30,8 @@ void OriginWindow::applyTransformation()
         if (transformation.x <= 0 || transformation.y <= 0 || transformation.z <= 0)
             return;
         selectedProp.goalScale = (selectedProp.scale).scale(transformation);
-        printf("Scale\n");
+        selectedProp.isTransforming = true;
+        //printf("Scale\n");
     }
 }
 
@@ -55,21 +57,24 @@ void OriginWindow::applyRotation()
         selectedProp.goalRotation.x = (selectedProp.rotation).x + angle;
         selectedProp.goalRotation.y = (selectedProp.rotation).y;
         selectedProp.goalRotation.z = (selectedProp.rotation).z;
-        printf("RotateByX\n");
+        selectedProp.isTransforming = true;
+        //printf("RotateByX\n");
     }
     else if (axis == RotateByY)
     {
         selectedProp.goalRotation.x = (selectedProp.rotation).x;
         selectedProp.goalRotation.y = (selectedProp.rotation).y + angle;
         selectedProp.goalRotation.z = (selectedProp.rotation).z;
-        printf("RotateByY\n");
+        selectedProp.isTransforming = true;
+        //printf("RotateByY\n");
     }
     else if (axis == RotateByZ)
     {
         selectedProp.goalRotation.x = (selectedProp.rotation).x;
         selectedProp.goalRotation.y = (selectedProp.rotation).y;
         selectedProp.goalRotation.z = (selectedProp.rotation).z + angle;
-        printf("RotateByZ\n");
+        selectedProp.isTransforming = true;
+        //printf("RotateByZ\n");
     }
 }
 

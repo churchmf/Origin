@@ -80,12 +80,6 @@ bool MyPoint::equals(MyPoint p2)
     return x == p2.x && y == p2.y && z == p2.z;
 }
 
-bool MyPoint::isNear(MyPoint p2)
-{
-    float length = this->length(p2);
-    return length <= PROP_TRANSFORM_STEP;
-}
-
 MyPoint MyPoint::plus(MyPoint p2)
 {
     MyPoint res;

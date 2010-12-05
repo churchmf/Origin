@@ -20,21 +20,6 @@ struct Scene{
     int objcount;				//number of loaded objects
     int propcount;				//number of loaded props
     int selectedProp;				//index of selected prop
-
-    GLUquadricObj	*q;			// Quadratic For Drawing Light Spheres
-
-    float CameraPos;				// Camera Distance to Origin
-    float CameraRot[4];				// Camera Rotation
-
-    float LightPos1[4];			        // Light 1 Position
-    float LightAmb1[4];				// Ambient Light Values
-    float LightDif1[4];				// Diffuse Light Values
-    float LightSpc1[4];				// Specular Light Values
-
-    float LightPos2[4];				// Light 2 Position
-    float LightAmb2[4];	    			// Ambient Light Values
-    float LightDif2[4];				// Diffuse Light Values
-    float LightSpc2[4];				// Specular Light Values
 };
 
 #endif // SCENE_H

@@ -215,6 +215,7 @@ void OriginWindow::readObject(QFile* file, MyObject& o)
     }
     o.nPlanes = planeNum;
     o.nPoints = pointNum;
+    o.isTransforming = false;
 
     //initialize object's position
     if (pointNum > 0)

@@ -57,11 +57,15 @@ protected:
     void updatePropsPosition();
     void updatePropsRotation();
     void updatePropsScale();
+    void updateIsTransforming();
+    void applyPhysics(MyObject& o);
 
     //Select active prop
     void selectProp();
     bool pointInsideTriangle(MyPoint& p, MyPoint& a, MyPoint& b, MyPoint& c);
     bool CheckLineTri(MyPoint& TP1, MyPoint& TP2, MyPoint& TP3, MyPoint& LP1, MyPoint& LP2, MyPoint& HitPos);
+    // Returns if there is a collision with any object and the points when moving them by delta
+    bool checkCollisionWithAll(QList<MyPoint> before, MyPoint& delta);
 
     //User Input Events
     void updateKeyState(int key, bool isPressed);
