@@ -37,7 +37,7 @@ void OriginWindow::initializeGL()
     // Load in the HUD textures
     QString crosshairTexture = "../images/crosshair.bmp";
     this->readTexture(crosshairTexture);
-     QString axisTexture = "../images/axis.bmp";
+    QString axisTexture = "../images/axis.bmp";
     this->readTexture(axisTexture);
 
     glEnable(GL_TEXTURE_2D);
@@ -317,46 +317,56 @@ void OriginWindow::updatePlayerPosition()
     linePoint1.y = walkbias+0.5f;
     linePoint1.z = zpos;
 
-    printf("movement: %f,%f,%f \n", linePoint1.x-linePoint0.x, linePoint1.y-linePoint0.y, linePoint1.z-linePoint0.z);
+//    printf("movement: %f,%f,%f \n", linePoint1.x-linePoint0.x, linePoint1.y-linePoint0.y, linePoint1.z-linePoint0.z);
 
     for(int i=0; i<scene.objcount; i++)
     {
         // Get the Object.
-        MyObject& object = scene.obj[i];
+        MyObject object = scene.obj[i];
 
-        // Check for collisions with each plane of the object.
+        // Check for collisions with each triangular plane of the object.
         for(int j=0; j<object.nPlanes; j++)
         {
-            // Get the plane.
-            MyPlane& plane = object.planes[j];
+            // Get the triangular plane.
+            MyPlane plane = object.planes[j];
 
-            // Get points on the plane.
+            // Get points on the triangular plane.
             MyPoint p1 = object.points[plane.pids[0]];
             MyPoint p2 = object.points[plane.pids[1]];
             MyPoint p3 = object.points[plane.pids[2]];
-            MyPoint p4 = object.points[plane.pids[3]];
 
-            // Compute the normal of the plane.
+            // Compute the normal of the triangular plane.
             MyPoint planeNormal = (p3.minus(p2)).cross(p2.minus(p1));
             planeNormal.normalize();
 
-            // Solve for d, the parameter value of the intersection point.
+            // If the player is too close to the triangular plane, collide.
+//            printf("distance to plane: %d \n", planeNormal.dot(linePoint1.minus(p1)));
+            if(fabs(planeNormal.dot(linePoint1.minus(p1))) < 0.01f)
+            {
+                xpos = oldxpos;
+                zpos = oldzpos;
+                return;
+            }
+
+            // Compute the numerator and denominator for computing d.
             double numerator = planeNormal.dot(p1.minus(linePoint0));
             double denominator = planeNormal.dot(linePoint1.minus(linePoint0));
 
-            // Neither the numerator nor denominator are zero, so there IS an intersection point d.
-            double d=-1;
-            if(denominator != 0){
-                d = numerator / denominator;
-            }
-            printf("d value: %d \n",d);
+            // If the denominator is zero, there is no intersection so skip to checking the next plane.
+            if(denominator == 0){ continue; }
 
-            // However, we still need to check that d is between the line's endpoints and within the plane's boundaries.
+            // Compute d, the parameter value on the line of the point of intersection.
+            double d = numerator / denominator;
+//            printf("d value: %d \n",d);
 
-            // Check endpoints:
-            if(0 <= d && d <= 1 ){
-                // Check boundaries:
-                if(true)
+            // Check if d is between the endpoints of the line:
+            if(0 <= d && d <= 1 )
+            {
+                // Compute the point of intersection.
+                MyPoint intersectionPoint = linePoint0.plus(linePoint1.times(d));
+
+                // Check that the intersection point is within the boundaries of the triangular plane:
+                if(pointInsideTriangle(intersectionPoint, p1, p2, p3))
                 {
                     // There is a collision, so reset the position to the last position.
                     xpos = oldxpos;
@@ -367,6 +377,44 @@ void OriginWindow::updatePlayerPosition()
             // If program execution gets here, there is no collision, so allow the player's position to be updated.
         }
     }
+}
+
+/*
+ P is the point of possible intersection.
+ The triangle is set up like so:
+ b
+ | \
+ a--C
+ */
+bool OriginWindow::pointInsideTriangle(MyPoint& p, MyPoint& a, MyPoint& b, MyPoint& c)
+{
+    // Create the vectors to use for the triangle.
+    MyPoint v0 = c.minus(a);
+    MyPoint v1 = b.minus(a);
+    MyPoint v2 = p.minus(a);
+
+    // Compute the dot products to use for changing to barycentric coordinates.
+    float dotv0v0 = v0.dot(v0);
+    float dotv0v1 = v0.dot(v1);
+    float dotv0v2 = v0.dot(v2);
+    float dotv1v1 = v1.dot(v1);
+    float dotv1v2 = v1.dot(v2);
+
+    // Compute barycentric coordinates u and v.
+    float u, v;
+    float denominator = dotv0v0 * dotv1v1 - dotv0v1 * dotv0v1;
+
+    if(denominator != 0)
+    {
+        u = (dotv1v1 * dotv0v2 - dotv0v1 * dotv1v2)/denominator;
+        v = (dotv0v0 * dotv1v2 - dotv0v1 * dotv0v2)/denominator;
+    }else
+    {
+        printf("Denominator of barycentric coordinate conversion was zero.");
+        return true;
+    }
+
+    return (0 < u) && (0 < v) && (u + v < 1);
 }
 
 bool OriginWindow::checkCollision(MyObject& object1)
