@@ -310,9 +310,9 @@ bool OriginWindow::checkCollisionWithAll(QList<MyPoint> before, MyPoint& delta)
     for (int i=0;i < numPoints; i++)
     {
         MyPoint afterTransformation;
-        afterTransformation.x = before.x + delta.x;
-        afterTransformation.y = before.y + delta.y;
-        afterTransformation.z = before.z + delta.z;
+        afterTransformation.x = before.at(i).x + delta.x;
+        afterTransformation.y = before.at(i).y + delta.y;
+        afterTransformation.z = before.at(i).z + delta.z;
         after.append(afterTransformation);
     }
 
@@ -329,10 +329,10 @@ bool OriginWindow::checkCollisionWithAll(QList<MyPoint> before, MyPoint& delta)
             MyObject& sceneObject = scene.obj[i];
 
             // Check for collisions with each triangular plane of the object.
-            for(unsigned int k=0; k<sceneObject.nPlanes; j++)
+            for(unsigned int k=0; k<sceneObject.nPlanes; k++)
             {
                 // Get the triangular plane.
-                MyPlane plane = sceneObject.planes[j];
+                MyPlane plane = sceneObject.planes[k];
 
                 // Get the sceneObject's position.
                 MyPoint objectPos = sceneObject.position;
@@ -354,17 +354,18 @@ bool OriginWindow::checkCollisionWithAll(QList<MyPoint> before, MyPoint& delta)
         }
 
         // Check for collisions with each prop in the scene.
-        for(int i=0; i<scene.propcount; i++)
+        for(int j=0; j<scene.propcount; j++)
         {
-            MyObject prop = scene.prop[i];
+            // Get the Object.
+            MyObject& prop = scene.prop[i];
 
-            // Check for collisions with each triangular plane of the prop.
-            for(unsigned int j=0; j<prop.nPlanes; j++)
+            // Check for collisions with each triangular plane of the object.
+            for(unsigned int k=0; k<prop.nPlanes; k++)
             {
                 // Get the triangular plane.
-                MyPlane plane = prop.planes[j];
+                MyPlane plane = prop.planes[k];
 
-                // Get the object's position.
+                // Get the sceneObject's position.
                 MyPoint propPos = prop.position;
 
                 // Get points on the triangular plane.
@@ -375,7 +376,7 @@ bool OriginWindow::checkCollisionWithAll(QList<MyPoint> before, MyPoint& delta)
                 // Compute the point of intersection.
                 MyPoint intersectionPoint;
 
-                // Check that the intersection point is within the triangular plane:
+                // Check that the intersection point is within the boundaries of the triangular plane:
                 if(CheckLineTri(p1, p2, p3, linePoint0, linePoint1, intersectionPoint))
                 {
                     return true;
@@ -383,9 +384,8 @@ bool OriginWindow::checkCollisionWithAll(QList<MyPoint> before, MyPoint& delta)
             }
         }
     }
+    return false;
 }
-
-
 
 void OriginWindow::updatePlayerPosition()
 {
@@ -445,81 +445,23 @@ void OriginWindow::updatePlayerPosition()
     linePoint0.y = 0.5f;
     linePoint0.z = oldzpos;
 
+
     // Convert the player's new position into a MyPoint.
     MyPoint linePoint1;
     linePoint1.x = xpos;
     linePoint1.y = 0.5f;
     linePoint1.z = zpos;
 
-    //    printf("movement: %f,%f,%f \n", linePoint1.x-linePoint0.x, linePoint1.y-linePoint0.y, linePoint1.z-linePoint0.z);
+    QList<MyPoint> cameraPos;
+    cameraPos.append(linePoint0);
+    MyPoint delta = linePoint1.minus(linePoint0);
 
-    // Check for collisions with each object in the scene.
-    for(int i=0; i<scene.objcount; i++)
+    if (checkCollisionWithAll(cameraPos,delta))
     {
-        // Get the Object.
-        MyObject object = scene.obj[i];
-
-        // Check for collisions with each triangular plane of the object.
-        for(unsigned int j=0; j<object.nPlanes; j++)
-        {
-            // Get the triangular plane.
-            MyPlane plane = object.planes[j];
-
-            // Get the object's position.
-            MyPoint objectPos = object.position;
-
-            // Get points on the triangular plane.
-            MyPoint p1 = object.points[plane.pids[0]].plus(objectPos);
-            MyPoint p2 = object.points[plane.pids[1]].plus(objectPos);
-            MyPoint p3 = object.points[plane.pids[2]].plus(objectPos);
-
-            // Compute the point of intersection.
-            MyPoint intersectionPoint;
-
-            // Check that the intersection point is within the boundaries of the triangular plane:
-            if(CheckLineTri(p1, p2, p3, linePoint0, linePoint1, intersectionPoint))
-            {
-                // There is a collision, so reset the position to the last position.
-                xpos = oldxpos;
-                zpos = oldzpos;
-                return;
-            }
-            // If program execution gets here, there is no collision, so allow the player's position to be updated.
-        }
-    }
-
-    // Check for collisions with each prop in the scene.
-    for(int i=0; i<scene.propcount; i++)
-    {
-        MyObject prop = scene.prop[i];
-
-        // Check for collisions with each triangular plane of the prop.
-        for(unsigned int j=0; j<prop.nPlanes; j++)
-        {
-            // Get the triangular plane.
-            MyPlane plane = prop.planes[j];
-
-            // Get the object's position.
-            MyPoint propPos = prop.position;
-
-            // Get points on the triangular plane.
-            MyPoint p1 = prop.points[plane.pids[0]].plus(propPos);
-            MyPoint p2 = prop.points[plane.pids[1]].plus(propPos);
-            MyPoint p3 = prop.points[plane.pids[2]].plus(propPos);
-
-            // Compute the point of intersection.
-            MyPoint intersectionPoint;
-
-            // Check that the intersection point is within the triangular plane:
-            if(CheckLineTri(p1, p2, p3, linePoint0, linePoint1, intersectionPoint))
-            {
-                // There is a collision, so reset the position to the last position.
-                xpos = oldxpos;
-                zpos = oldzpos;
-                return;
-            }
-            // If program execution gets here, there is no collision, so allow the player's position to be updated.
-        }
+        // There is a collision, so reset the position to the last position.
+        xpos = oldxpos;
+        zpos = oldzpos;
+        return;
     }
 }
 
@@ -648,12 +590,14 @@ void OriginWindow::applyPhysics(MyObject& o)
         return;
 
     // apply gravity
-    o.velocity.y = o.velocity.y + GRAVITY_STEP;
+    //o.velocity.y = o.velocity.y + GRAVITY_STEP;
+
+    //MyPoint& curPosition = o.position;
 
     //adjust position
-    curPosition.x += o.velocity.x;
-    curPosition.y += o.velocity.y;
-    curPosition.z += o.velocity.z;
+    //curPosition.x += o.velocity.x;
+    //curPosition.y += o.velocity.y;
+    //curPosition.z += o.velocity.z;
 }
 
 void OriginWindow::updateIsTransforming()
