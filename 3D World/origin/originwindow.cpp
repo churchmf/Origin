@@ -59,7 +59,7 @@ void OriginWindow::resizeGL( int width, int height )
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
 
-    gluPerspective(45.0f,(GLfloat)width/(GLfloat)height,0.1f,100.0f);
+    gluPerspective(45.0f,(GLfloat)width/(GLfloat)height,0.0001f,100.0f);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -336,17 +336,18 @@ void OriginWindow::updatePlayerPosition()
             MyPoint p3 = object.points[plane.pids[2]];
 
             // Compute the normal of the triangular plane.
-            MyPoint planeNormal = (p3.minus(p2)).cross(p2.minus(p1));
+            MyPoint planeNormal = (p2.minus(p1)).cross(p3.minus(p1));
+            //            MyPoint planeNormal = (p3.minus(p2)).cross(p2.minus(p1));
             planeNormal.normalize();
 
-            // If the player is too close to the triangular plane, collide.
-            printf("distance to plane: %d \n", planeNormal.dot(linePoint1.minus(p1)));
-//            if(fabs(planeNormal.dot(linePoint1.minus(p1))) < 0.1f)
-//            {
-//                xpos = oldxpos;
-//                zpos = oldzpos;
-//                return;
-//            }
+            //            // If the player is too close to the triangular plane, collide.
+            //            printf("distance to plane: %f \n", (linePoint1.minus(p1)).dot(planeNormal));
+            //            if( CheckLineTri() )
+            //            {
+            //                xpos = oldxpos;
+            //                zpos = oldzpos;
+            //                return;
+            //            }
 
             // Compute the numerator and denominator for computing d.
             double numerator = planeNormal.dot(p1.minus(linePoint0));
@@ -357,23 +358,17 @@ void OriginWindow::updatePlayerPosition()
 
             // Compute d, the parameter value on the line of the point of intersection.
             double d = numerator / denominator;
-            //            printf("d value: %d \n",d);
 
-            // Check if d is between the endpoints of the line:
-            if(0 <= d && d <= 1 )
+            // Compute the point of intersection.
+            MyPoint intersectionPoint;
+
+            // Check that the intersection point is within the boundaries of the triangular plane:
+            if(CheckLineTri(p1, p2, p3, linePoint0, linePoint1, intersectionPoint))
             {
-                // Compute the point of intersection.
-                MyPoint intersectionPoint = linePoint0.plus(linePoint1.times(d));
-
-                // Check that the intersection point is within the boundaries of the triangular plane:
-                if(CheckLineTri(p1, p2, p3, linePoint0, linePoint1, intersectionPoint))
-//                if(pointInsideTriangle(intersectionPoint, p1, p2, p3))
-                {
-                    // There is a collision, so reset the position to the last position.
-                    xpos = oldxpos;
-                    zpos = oldzpos;
-                    return;
-                }
+                // There is a collision, so reset the position to the last position.
+                xpos = oldxpos;
+                zpos = oldzpos;
+                return;
             }
             // If program execution gets here, there is no collision, so allow the player's position to be updated.
         }
@@ -429,13 +424,14 @@ bool OriginWindow::CheckLineTri(MyPoint& TP1, MyPoint& TP2, MyPoint& TP3, MyPoin
     // Find distance from LP1 and LP2 to the plane defined by the triangle
     float Dist1 = (LP1.minus(TP1)).dot( normal );
     float Dist2 = (LP2.minus(TP1)).dot( normal );
+
     if ( (Dist1 * Dist2) >= 0.0f) return false;  // line doesn't cross the triangle.
     if ( Dist1 == Dist2) return false;// line and plane are parallel
 
     // Find point on the line that intersects with the plane
     IntersectPos = LP1.plus(LP2.minus(LP1).times(-Dist1/(Dist2-Dist1)));
 
-    // Find if the interesection point lies inside the triangle by testing it against all edges
+    // Find if the intersection point lies inside the triangle by testing it against all edges
     MyPoint vTest;
     vTest = normal.cross(TP2.minus(TP1));
     if(vTest.dot(IntersectPos.minus(TP1)) < 0.0f) return false;
