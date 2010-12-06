@@ -599,15 +599,20 @@ void OriginWindow::updatePropsPosition()
             delta.z = diff.z * PROP_TRANSLATE_STEP;
 
             QList<MyPoint> points;
-            for (int j=0; j<o.nPoints; j++)
+            for (unsigned int j=0; j<o.nPoints; j++)
             {
                 points.append(o.points[j].plus(o.position));
             }
 
-            // Check for collision
+            // Check for collision for the move
             if (checkCollisionWithAll(points,delta))
             {
+                //if there was a collision, set the goal to the current position, make the object bounce back a bit, and disable transforming
                 goal = curPosition;
+                o.velocity.x = -delta.x * 0.2f;
+                o.velocity.y = -delta.y * 0.2f;
+                o.velocity.z = -delta.z * 0.2f;
+                o.isTransforming = false;
             }
             else
             {
@@ -617,7 +622,7 @@ void OriginWindow::updatePropsPosition()
         }
         else
         {
-            //Update prop's position with physics
+            //Update prop's position with physics (velocity)
             applyPhysics(o);
         }
     }
@@ -688,14 +693,38 @@ void OriginWindow::applyPhysics(MyObject& o)
         return;
 
     // apply gravity
-    //o.velocity.y = o.velocity.y + GRAVITY_STEP;
+    o.velocity.y += GRAVITY_STEP;
 
-    //MyPoint& curPosition = o.position;
+    MyPoint delta;
+    delta.x = o.velocity.x;
+    delta.y = o.velocity.y;
+    delta.z = o.velocity.z;
 
-    //adjust position
-    //curPosition.x += o.velocity.x;
-    //curPosition.y += o.velocity.y;
-    //curPosition.z += o.velocity.z;
+    QList<MyPoint> points;
+    for (unsigned int j=0; j<o.nPoints; j++)
+    {
+        points.append(o.points[j].plus(o.position));
+    }
+
+    // Check for collision
+    if (checkCollisionWithAll(points,delta))
+    {
+        o.velocity.x = -delta.x * 0.2f;
+        o.velocity.y = -delta.y * 0.2f;
+        o.velocity.z = -delta.z * 0.2f;
+    }
+    else
+    {
+        MyPoint& curPosition = o.position;
+
+        // Adjust position based on velocity
+        curPosition.x += o.velocity.x;
+        curPosition.y += o.velocity.y;
+        curPosition.z += o.velocity.z;
+
+        // reduce objects velocity (friction)
+        o.velocity.times(0.8f);
+    }
 }
 
 void OriginWindow::updateIsTransforming()

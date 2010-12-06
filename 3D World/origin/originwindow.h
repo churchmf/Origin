@@ -58,7 +58,7 @@ protected:
     void updatePropsRotation();
     void updatePropsScale();
     void updateIsTransforming();
-    void applyPhysics(MyObject& o);
+    void applyPhysics(QList<MyPoint> points);
 
     //Select active prop
     void selectProp();
