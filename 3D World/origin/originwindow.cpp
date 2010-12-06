@@ -120,7 +120,7 @@ void OriginWindow::paintGL()
         MyPoint& rotation = object.rotation;
 
         // Get the scale.
-        MyPoint& scale = object.scale;
+//        MyPoint& scale = object.scale;
 
         // Make a copy of the current matrix on top of the stack.
         glPushMatrix();
@@ -137,7 +137,7 @@ void OriginWindow::paintGL()
         //glTranslatef(-position.x, -position.y, -position.z);
 
         // Scale the object.
-        glScalef(scale.x,scale.y,scale.z);
+//        glScalef(scale.x,scale.y,scale.z);
 
         // Draw the object.
         object.draw();
@@ -160,7 +160,7 @@ void OriginWindow::paintGL()
         MyPoint& rotation = object.rotation;
 
         // Get the scale.
-        MyPoint& scale = object.scale;
+//        MyPoint& scale = object.scale;
 
         // Make a copy of the current matrix on top of the stack.
         glPushMatrix();
@@ -177,7 +177,7 @@ void OriginWindow::paintGL()
         //glTranslatef(-position.x, -position.y, -position.z);
 
         // Scale the object.
-        glScalef(scale.x,scale.y,scale.z);
+//        glScalef(scale.x,scale.y,scale.z);
 
         // Enable blending on the selectedProp
         glEnable(GL_BLEND);
@@ -669,14 +669,20 @@ void OriginWindow::updatePropsScale()
         // If the prop is not near the goal
         if (!curScale.equals(goal))
         {
-            // Get the direction to move
-            MyPoint diff = goal.minus(curScale);
-            diff.normalize();
+            // Update the current scale.
+            curScale = goal;
 
-            // Scale towards the goal
-            curScale.x += diff.x * PROP_SCALE_STEP;
-            curScale.y += diff.y * PROP_SCALE_STEP;
-            curScale.z += diff.z * PROP_SCALE_STEP;
+            // Translate the position up, so the object doesn't fall through the world.
+            o.position.y *= goal.y;
+
+            // Update the point's locations.
+            for(int j=0; j<o.nPoints; j++)
+            {
+                MyPoint& p = o.points[j];
+                p.x *= goal.x;
+                p.y = p.y*goal.y + o.position.y;
+                p.z *= goal.z;
+            }
         }
         else
         {

@@ -29,6 +29,10 @@ void OriginWindow::applyTransformation()
     {
         if (transformation.x <= 0 || transformation.y <= 0 || transformation.z <= 0)
             return;
+
+        // Set the current scale to be 1. (to allow for relative scaling.)
+        selectedProp.scale.x = selectedProp.scale.y = selectedProp.scale.z = 1.0f;
+
         selectedProp.goalScale = (selectedProp.scale).scale(transformation);
         selectedProp.isTransforming = true;
         //printf("Scale\n");
