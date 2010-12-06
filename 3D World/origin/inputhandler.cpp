@@ -1,5 +1,57 @@
 #include "originwindow.h"
 
+void OriginWindow::selectProp()
+{
+    MyPoint p1;
+    p1.x = xpos;
+    p1.y = ypos; //walkbias+0.25f;
+    p1.z = zpos;
+
+    MyPoint gaze;
+    gaze.x = (float)sin(heading*piover180);
+    gaze.y = -(float)sin(lookupdown * piover180);
+    gaze.z = -(float)cos(heading*piover180);
+
+    MyPoint p2 = p1.plus((gaze.times(INF)));
+
+    //printf("p1: %f,%f,%f \n", p1.x,p1.y,p1.z);
+    //printf("gaze: %f,%f,%f \n", gaze.x,gaze.y,gaze.z);
+    //printf("p2: %f,%f,%f \n", p2.x,p2.y,p2.z);
+
+    int closestIndex = NO_SELECTION;
+    float closestDist = INF;
+    for(int i=0; i<scene.propcount; i++)
+    {
+        // Create a reference to the prop.
+        MyObject& o = scene.prop[i];
+
+        for (unsigned int j=0; j <o.nPlanes; j++)
+        {
+            //calculate the plane normal
+            MyPlane& plane = o.planes[j];
+            MyPoint A = o.points[plane.pids[0]].plus(o.position);
+            MyPoint B = o.points[plane.pids[1]].plus(o.position);
+            MyPoint C = o.points[plane.pids[2]].plus(o.position);
+
+            // cast a ray and collide with any props
+            MyPoint t;
+            if (lineTriangleCollision(A,B,C,p1,p2,t))
+            {
+                //printf("select! %f,%f,%f\n",t.x,t.y,t.z);
+
+                //get the closest prop
+                float dist = t.length(p1);
+                if (dist < closestDist)
+                {
+                    closestDist = dist;
+                    closestIndex = i;
+                }
+            }
+        }
+        scene.selectedProp = closestIndex;
+    }
+}
+
 void OriginWindow::applyTransformation()
 {
     //verify that the input is valid
@@ -34,6 +86,7 @@ void OriginWindow::applyTransformation()
         selectedProp.scale.x = selectedProp.scale.y = selectedProp.scale.z = 1.0f;
 
         selectedProp.goalScale = (selectedProp.scale).scale(transformation);
+        selectedProp.goalPosition.y = selectedProp.goalPosition.y + 1;
         selectedProp.isTransforming = true;
         //printf("Scale\n");
     }

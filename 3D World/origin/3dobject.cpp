@@ -38,7 +38,7 @@ float MyPoint::dot(MyPoint op2){
     res.x = x * op2.x;
     res.y = y * op2.y;
     res.z = z * op2.z;
-    return res.x+ res.y+ res.z;
+    return res.x + res.y + res.z;
 }
 
 //scalar multiplication

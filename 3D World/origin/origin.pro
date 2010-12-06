@@ -19,4 +19,6 @@ SOURCES += main.cpp \
     originwindow.cpp \
     inputhandler.cpp \
     3dobject.cpp \
-    filehandler.cpp
+    filehandler.cpp \
+    collisionhandler.cpp \
+    updatehandler.cpp
