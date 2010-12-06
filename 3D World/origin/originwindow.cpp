@@ -710,7 +710,7 @@ void OriginWindow::applyPhysics(MyObject& o)
     if (checkCollisionWithAll(points,delta))
     {
         o.velocity.x = -delta.x * 0.2f;
-        o.velocity.y = -delta.y * 0.2f;
+        o.velocity.y += -delta.y * 0.2f;
         o.velocity.z = -delta.z * 0.2f;
     }
     else

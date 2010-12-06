@@ -15,8 +15,9 @@ This file is borrowed from Assignment3 of CMPUT411 at the University of Alberta.
 #define PROP_TRANSLATE_STEP 0.01f
 #define PROP_ROTATE_STEP 0.01f
 #define PROP_SCALE_STEP 0.01f
-#define GRAVITY_STEP    -0.01f
-#define JUMP_STEP  0.2f;
+#define GRAVITY_STEP    -0.0001f
+#define JUMP_STEP  0.2f
+#define FLOATING_POINT_EQUALITY_CUTOFF 0.2f
 
 typedef float GLvector4f[4];		// Typedef's For VMatMult Procedure
 typedef float GLmatrix16f[16];		// Typedef's For VMatMult Procedure

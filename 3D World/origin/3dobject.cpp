@@ -77,7 +77,9 @@ float MyPoint::length(MyPoint p2)
 
 bool MyPoint::equals(MyPoint p2)
 {
-    return x == p2.x && y == p2.y && z == p2.z;
+    return (fabs(x - p2.x) < FLOATING_POINT_EQUALITY_CUTOFF) &&
+            (fabs(y - p2.y) < FLOATING_POINT_EQUALITY_CUTOFF) &&
+            (fabs(z - p2.z) < FLOATING_POINT_EQUALITY_CUTOFF);
 }
 
 MyPoint MyPoint::plus(MyPoint p2)
