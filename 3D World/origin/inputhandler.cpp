@@ -86,7 +86,6 @@ void OriginWindow::applyTransformation()
         selectedProp.scale.x = selectedProp.scale.y = selectedProp.scale.z = 1.0f;
 
         selectedProp.goalScale = (selectedProp.scale).scale(transformation);
-        selectedProp.goalPosition.y = selectedProp.goalPosition.y + 1;
         selectedProp.isTransforming = true;
         //printf("Scale\n");
     }

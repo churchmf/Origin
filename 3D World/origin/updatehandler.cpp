@@ -174,16 +174,52 @@ void OriginWindow::updatePropsRotation()
         MyPoint& curRotation = o.rotation;
 
         // If the prop is not near the goal
-        if (!curRotation.equals(goal))
+        if (!curRotation.equals(goal) && o.isTransforming)
         {
             // Get the direction to move
             MyPoint diff = goal.minus(curRotation);
             diff.normalize();
 
-            // Rotate towards the goal
-            curRotation.x += diff.x * PROP_ROTATE_STEP;
-            curRotation.y += diff.y * PROP_ROTATE_STEP;
-            curRotation.z += diff.z * PROP_ROTATE_STEP;
+            MyPoint delta;
+            delta.x = diff.x * PROP_TRANSLATE_STEP;
+            delta.y = diff.y * PROP_TRANSLATE_STEP;
+            delta.z = diff.z * PROP_TRANSLATE_STEP;
+
+            QList<MyPoint> before;
+            for (unsigned int j=0; j<o.nPoints; j++)
+            {
+                before.append(o.points[j].plus(o.position));
+            }
+
+            QList<MyPoint> after;
+            for (unsigned int j=0; j<o.nPoints; j++)
+            {
+                MyPoint afterTransformation;
+                afterTransformation.x = before.at(j).x + delta.x;
+                afterTransformation.y = before.at(j).y + delta.y;
+                afterTransformation.z = before.at(j).z + delta.z;
+                after.append(afterTransformation);
+            }
+
+            // Check for collision for the move
+            if (checkCollisionWithAll(before,after))
+            {
+                //if there was a collision, set the goal to the current position, make the object bounce back a bit
+                goal = curPosition;
+                o.velocity.x = -delta.x * 0.2f;
+                o.velocity.y = -delta.y * 0.2f;
+                o.velocity.z = -delta.z * 0.2f;
+
+                // Rotate towards the goal
+                curRotation.x += diff.x * PROP_ROTATE_STEP;
+                curRotation.y += diff.y * PROP_ROTATE_STEP;
+                curRotation.z += diff.z * PROP_ROTATE_STEP;
+            }
+            else
+            {
+                // Move towards the goal
+                curPosition = curPosition.plus(delta);
+            }
         }
         else
         {
@@ -206,7 +242,7 @@ void OriginWindow::updatePropsScale()
         if (!curScale.equals(goal) && o.isTransforming)
         {
             QList<MyPoint> before;
-            for (unsigned int j=0; j<o.nPoints; j++)
+            for (unsigned int j=0; j< o.nPoints; j++)
             {
                 before.append(o.points[j].plus(o.position));
             }
@@ -225,9 +261,10 @@ void OriginWindow::updatePropsScale()
             if (!checkCollisionWithAll(before,after))
             {
                 // Update the scale
-                curScale.x = 1;
-                curScale.y = 1;
-                curScale.z = 1;
+                curScale = goal;
+
+                o.position.y = o.position.y + goal.y/2;
+                o.goalPosition = o.position;
 
                 // Update the point's locations.
                 for(unsigned int j=0; j<o.nPoints; j++)
