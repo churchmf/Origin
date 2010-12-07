@@ -39,7 +39,7 @@ bool OriginWindow::checkCollisionWithAll(QList<MyPoint> before, QList<MyPoint> a
                 // Check that the intersection point is within the triangular plane:
                 if(lineTriangleCollision(p1, p2, p3, linePoint0, linePoint1, intersectionPoint))
                 {
-                    printf("collision with prop at (%f,%f,%f)\n",propPos.x,propPos.y,propPos.z);
+                    //printf("collision with prop at (%f,%f,%f)\n",propPos.x,propPos.y,propPos.z);
                     return true;
                 }
             }

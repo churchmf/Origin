@@ -205,10 +205,11 @@ void OriginWindow::updatePropsRotation()
                     float angle = delta.x * piover180;
                     //x' = x
                     newPoint.x = oldPoint.x;
-                    //y' = y*cos q - z*sin q
-                    newPoint.y = oldPoint.y*cos(angle) - oldPoint.z*sin(angle);
-                    //z' = y*sin q + z*cos q
-                    newPoint.z = oldPoint.y*sin(angle) + oldPoint.z*cos(angle);
+                    //y' = y*sin q + z*cos q
+                    newPoint.y = oldPoint.y*sin(angle) + oldPoint.z*cos(angle);
+                    //z' = y*cos q - z*sin q
+                    newPoint.z = oldPoint.y*cos(angle) - oldPoint.z*sin(angle);
+
                 }
                 // Y rotation
                 else if (fabs(delta.y) > 0)
@@ -243,7 +244,8 @@ void OriginWindow::updatePropsRotation()
                 // Check for collision for the point rotate
                 if (checkCollisionWithAll(before,after,o.position))
                 {
-                    //revert the points back since the point collides, stop rotating since we collided
+                    printf("collision while rotating at point(%f,%f,%f)\n",newPoint.x,newPoint.y,newPoint.z);
+                    //revert the points back since the point collided, stop rotating since we collided
                     //o = old;
                     for (unsigned int k=0; k < o.nPoints;k++)
                     {
@@ -265,7 +267,7 @@ void OriginWindow::updatePropsRotation()
             }
             // Move towards the goal rotation since there was no collision
             curRotation = curRotation.plus(delta);
-            o.goalPosition = o.position;
+            //o.goalPosition = o.position;
         }
     }
 }
