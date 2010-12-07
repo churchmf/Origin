@@ -1,7 +1,0 @@
-3
-2
-objects/room1.obj
-objects/cone.obj
-objects/crate.obj
-objects/cube1.obj
-objects/cube2.obj

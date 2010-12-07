@@ -15,22 +15,27 @@
 #define IO_ReadOnly QIODevice::ReadOnly
 #define MIN_WIDTH 800
 #define MIN_HEIGHT 600
-#define MAX_TEXTURES 15
+#define MAX_TEXTURES 30
+#define TIMER_LOOP_SPEED 18
 const float INF = 10;
 
 // This constant protects against rounding errors that could otherwise arise during collision detection.
 const double zeroCutoff = 1e-10;
 
+//convert between rad and degrees
 const float piover180 = 0.0174532925f;
 
+//types of transformations for the gui widget
 enum TransformationType { Translate, Scale };
+//types of rotations for the gui widget
 enum RotationAxis { RotateByX, RotateByY, RotateByZ };
 
-// track the keystate since Qt is ghetto
+// track the keystate
 typedef struct {
     bool w,a,s,d,space;
 } KeyState;
 
+//main gl window widget
 class OriginWindow : public QGLWidget
 {
     Q_OBJECT
@@ -58,13 +63,13 @@ protected:
     void updatePropsRotation();
     void updatePropsScale();
     void updateIsTransforming();
-    void applyPhysics(MyObject& o);
+    void applyPhysics();
 
     //Select active prop
     void selectProp();
     bool lineTriangleCollision(MyPoint& TP1, MyPoint& TP2, MyPoint& TP3, MyPoint& LP1, MyPoint& LP2, MyPoint& HitPos);
     // Returns if there is a collision with any object and the points when moving them by delta
-    bool checkCollisionWithAll(QList<MyPoint> before, QList<MyPoint> after);
+    bool checkCollisionWithAll(QList<MyPoint> before, QList<MyPoint> after, MyPoint objPos);
 
     //User Input Events
     void updateKeyState(int key, bool isPressed);

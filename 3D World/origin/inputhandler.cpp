@@ -72,8 +72,8 @@ void OriginWindow::applyTransformation()
     // Translate
     if (type == Translate)
     {
+        selectedProp.goalRotation = selectedProp.rotation;
         selectedProp.goalPosition = (selectedProp.position).plus(transformation);
-        selectedProp.isTransforming = true;
         //printf("Translate\n");
     }
     //Scale
@@ -86,7 +86,6 @@ void OriginWindow::applyTransformation()
         selectedProp.scale.x = selectedProp.scale.y = selectedProp.scale.z = 1.0f;
 
         selectedProp.goalScale = (selectedProp.scale).scale(transformation);
-        selectedProp.isTransforming = true;
         //printf("Scale\n");
     }
 }
@@ -107,30 +106,23 @@ void OriginWindow::applyRotation()
         return;
 
     MyObject& selectedProp = scene.prop[propIndex];
+    selectedProp.goalPosition = selectedProp.position;
+
     // Rotate
     if (axis == RotateByX)
     {
-        selectedProp.goalRotation.x = (selectedProp.rotation).x + angle;
-        selectedProp.goalRotation.y = (selectedProp.rotation).y;
-        selectedProp.goalRotation.z = (selectedProp.rotation).z;
-        selectedProp.isTransforming = true;
-        //printf("RotateByX\n");
+        selectedProp.rotation.x = 0;
+        selectedProp.goalRotation.x = angle;
     }
     else if (axis == RotateByY)
-    {
-        selectedProp.goalRotation.x = (selectedProp.rotation).x;
-        selectedProp.goalRotation.y = (selectedProp.rotation).y + angle;
-        selectedProp.goalRotation.z = (selectedProp.rotation).z;
-        selectedProp.isTransforming = true;
-        //printf("RotateByY\n");
+    {    
+        selectedProp.rotation.y = 0;
+        selectedProp.goalRotation.y = angle;
     }
     else if (axis == RotateByZ)
     {
-        selectedProp.goalRotation.x = (selectedProp.rotation).x;
-        selectedProp.goalRotation.y = (selectedProp.rotation).y;
-        selectedProp.goalRotation.z = (selectedProp.rotation).z + angle;
-        selectedProp.isTransforming = true;
-        //printf("RotateByZ\n");
+        selectedProp.rotation.z = 0;
+        selectedProp.goalRotation.z = angle;
     }
 }
 

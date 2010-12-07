@@ -25,7 +25,7 @@ OriginWindow::OriginWindow(QComboBox* transformationSelector, QTableWidget *tran
     keysPressed = KeyState();
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(timerLoop()));
-    timer->start(18);
+    timer->start(TIMER_LOOP_SPEED);
 }
 
 void OriginWindow::initializeGL()
@@ -116,28 +116,11 @@ void OriginWindow::paintGL()
         // Get the position to draw it at.
         MyPoint& position = object.position;
 
-        // Get the rotation to rotate the object by.
-        MyPoint& rotation = object.rotation;
-
-        // Get the scale.
-        //        MyPoint& scale = object.scale;
-
         // Make a copy of the current matrix on top of the stack.
         glPushMatrix();
 
         // Translate the origin to the point's position.
         glTranslatef(position.x, position.y, position.z);
-
-        // Rotate the object.
-        glRotatef(-rotation.x, 1.0, 0.0, 0.0);
-        glRotatef(-rotation.y, 0.0, 1.0, 0.0);
-        glRotatef(-rotation.z, 0.0, 0.0, 1.0);
-
-        // Translate back
-        //glTranslatef(-position.x, -position.y, -position.z);
-
-        // Scale the object.
-        //        glScalef(scale.x,scale.y,scale.z);
 
         // Draw the object.
         object.draw();
@@ -156,28 +139,11 @@ void OriginWindow::paintGL()
         // Get the position to draw it at.
         MyPoint& position = object.position;
 
-        // Get the rotation to rotate the object by.
-        MyPoint& rotation = object.rotation;
-
-        // Get the scale.
-        //        MyPoint& scale = object.scale;
-
         // Make a copy of the current matrix on top of the stack.
         glPushMatrix();
 
         // Translate the origin to the point's position.
         glTranslatef(position.x, position.y, position.z);
-
-        // Rotate the object.
-        glRotatef(-rotation.x, 1.0, 0.0, 0.0);
-        glRotatef(-rotation.y, 0.0, 1.0, 0.0);
-        glRotatef(-rotation.z, 0.0, 0.0, 1.0);
-
-        // Translate back
-        //glTranslatef(-position.x, -position.y, -position.z);
-
-        // Scale the object.
-        //        glScalef(scale.x,scale.y,scale.z);
 
         // Enable blending on the selectedProp
         glEnable(GL_BLEND);
@@ -194,8 +160,6 @@ void OriginWindow::paintGL()
         glPopMatrix();
     }
     ////////////////////////////////////////
-
-
     //Draw the HUD
     drawHUD();
 }

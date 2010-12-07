@@ -3,6 +3,12 @@
 // Main program loop
 void OriginWindow::timerLoop()
 {
+    //Update isTransforming for all props
+    updateIsTransforming();
+
+    //Apply Physics for all props
+    applyPhysics();
+
     //Update the player's position
     updatePlayerPosition();
 
@@ -14,9 +20,6 @@ void OriginWindow::timerLoop()
 
     //Update the props' scale
     updatePropsScale();
-
-    //Update isTransforming for all props
-    updateIsTransforming();
 
     //UpdateGL
     updateGL();
@@ -96,13 +99,14 @@ void OriginWindow::updatePlayerPosition()
     QList<MyPoint> after;
     after.append(linePoint1);
 
-    if (checkCollisionWithAll(before,after))
+    if (checkCollisionWithAll(before,after,linePoint0))
     {
         // There is a collision, so reset the position to the last position.
         xpos = oldxpos;
         zpos = oldzpos;
         return;
     }
+    printf("Camera at (%f,%f,%f)\n",xpos,ypos,zpos);
 }
 
 void OriginWindow::updatePropsPosition()
@@ -121,9 +125,12 @@ void OriginWindow::updatePropsPosition()
             MyPoint diff = goal.minus(curPosition);
             diff.normalize();
             MyPoint delta;
-            delta.x = diff.x * PROP_TRANSLATE_STEP;
-            delta.y = diff.y * PROP_TRANSLATE_STEP;
-            delta.z = diff.z * PROP_TRANSLATE_STEP;
+            delta.x = diff.x;
+            delta.y = diff.y;
+            delta.z = diff.z;
+            // snap to place if under 0.5
+            if (fabs(diff.x+diff.y+diff.z) > 0.05f)
+                delta = delta.times(PROP_TRANSLATE_STEP);
 
             QList<MyPoint> before;
             for (unsigned int j=0; j<o.nPoints; j++)
@@ -142,7 +149,7 @@ void OriginWindow::updatePropsPosition()
             }
 
             // Check for collision for the move
-            if (checkCollisionWithAll(before,after))
+            if (checkCollisionWithAll(before,after,curPosition))
             {
                 //if there was a collision, set the goal to the current position, make the object bounce back a bit
                 goal = curPosition;
@@ -155,11 +162,6 @@ void OriginWindow::updatePropsPosition()
                 // Move towards the goal
                 curPosition = curPosition.plus(delta);
             }
-        }
-        else
-        {
-            //Update prop's position with physics (velocity)
-            applyPhysics(o);
         }
     }
 }
@@ -173,58 +175,97 @@ void OriginWindow::updatePropsRotation()
         MyPoint& goal = o.goalRotation;
         MyPoint& curRotation = o.rotation;
 
-        // If the prop is not near the goal
         if (!curRotation.equals(goal) && o.isTransforming)
         {
-            // Get the direction to move
             MyPoint diff = goal.minus(curRotation);
-            diff.normalize();
-
             MyPoint delta;
-            delta.x = diff.x * PROP_TRANSLATE_STEP;
-            delta.y = diff.y * PROP_TRANSLATE_STEP;
-            delta.z = diff.z * PROP_TRANSLATE_STEP;
+            delta.x = diff.x;
+            delta.y = diff.y;
+            delta.z = diff.z;
+            // snap to rotation if under 3 degrees
+            if (fabs(diff.x+diff.y+diff.z) > 3.0f)
+                delta = delta.times(PROP_ROTATE_STEP);
 
-            QList<MyPoint> before;
-            for (unsigned int j=0; j<o.nPoints; j++)
+            //copy the object, so we can revert if there is a collision
+            MyPoint oldPoints[MAX_OBJECT_POINTS];
+            for (unsigned int j=0; j < o.nPoints; j++)
             {
-                before.append(o.points[j].plus(o.position));
+                MyPoint point = o.points[j];
+                oldPoints[j] = point;
             }
 
-            QList<MyPoint> after;
-            for (unsigned int j=0; j<o.nPoints; j++)
+            //for every point, rotate it and check for collision
+            for (unsigned int j=0; j < o.nPoints; j++)
             {
-                MyPoint afterTransformation;
-                afterTransformation.x = before.at(j).x + delta.x;
-                afterTransformation.y = before.at(j).y + delta.y;
-                afterTransformation.z = before.at(j).z + delta.z;
-                after.append(afterTransformation);
-            }
+                MyPoint& oldPoint = o.points[j];
+                MyPoint newPoint;
+                //X rotation
+                if (fabs(delta.x) > 0)
+                {
+                    float angle = delta.x * piover180;
+                    //x' = x
+                    newPoint.x = oldPoint.x;
+                    //y' = y*cos q - z*sin q
+                    newPoint.y = oldPoint.y*cos(angle) - oldPoint.z*sin(angle);
+                    //z' = y*sin q + z*cos q
+                    newPoint.z = oldPoint.y*sin(angle) + oldPoint.z*cos(angle);
+                }
+                // Y rotation
+                else if (fabs(delta.y) > 0)
+                {
+                    float angle = delta.y * piover180;
+                    //x' = z*sin q + x*cos q
+                    newPoint.x = oldPoint.z*sin(angle) + oldPoint.x*cos(angle);
+                    //y' = y
+                    newPoint.y = oldPoint.y;
+                    // z' = z*cos q - x*sin q
+                    newPoint.z = oldPoint.z*cos(angle) - oldPoint.x*sin(angle);
 
-            // Check for collision for the move
-            if (checkCollisionWithAll(before,after))
-            {
-                //if there was a collision, set the goal to the current position, make the object bounce back a bit
-                goal = curPosition;
-                o.velocity.x = -delta.x * 0.2f;
-                o.velocity.y = -delta.y * 0.2f;
-                o.velocity.z = -delta.z * 0.2f;
+                }
+                // Z rotation
+                else if (fabs(delta.z) > 0)
+                {
+                    float angle = delta.z * piover180;
+                    //x' = x*cos q - y*sin q
+                    newPoint.x = oldPoint.x*cos(angle) - oldPoint.y*sin(angle);
+                    //y' = x*sin q + y*cos q
+                    newPoint.y = oldPoint.x*sin(angle) + oldPoint.y*cos(angle);
+                    //z' = z
+                    newPoint.z = oldPoint.z;
+                }
 
-                // Rotate towards the goal
-                curRotation.x += diff.x * PROP_ROTATE_STEP;
-                curRotation.y += diff.y * PROP_ROTATE_STEP;
-                curRotation.z += diff.z * PROP_ROTATE_STEP;
+                QList<MyPoint> before;
+                before.append(oldPoint);
+
+                QList<MyPoint> after;
+                after.append(newPoint);
+
+                // Check for collision for the point rotate
+                if (checkCollisionWithAll(before,after,o.position))
+                {
+                    //revert the points back since the point collides, stop rotating since we collided
+                    //o = old;
+                    for (unsigned int k=0; k < o.nPoints;k++)
+                    {
+                        MyPoint point = oldPoints[k];
+                        o.points[k].x = point.x;
+                        o.points[k].y = point.y;
+                        o.points[k].z = point.z;
+                    }
+                    o.goalPosition = o.position;
+                    goal.x = curRotation.x = 0;
+                    goal.y = curRotation.y = 0;
+                    goal.z = curRotation.z = 0;
+                    return;
+                }
+                else
+                {
+                    oldPoint = newPoint;
+                }
             }
-            else
-            {
-                // Move towards the goal
-                curPosition = curPosition.plus(delta);
-            }
-        }
-        else
-        {
-            //Update prop's position with physics
-            applyPhysics(o);
+            // Move towards the goal rotation since there was no collision
+            curRotation = curRotation.plus(delta);
+            o.goalPosition = o.position;
         }
     }
 }
@@ -258,7 +299,7 @@ void OriginWindow::updatePropsScale()
             }
 
             // Check for collision for the move
-            if (!checkCollisionWithAll(before,after))
+            if (!checkCollisionWithAll(before,after,o.position))
             {
                 // Update the scale
                 curScale = goal;
@@ -276,62 +317,65 @@ void OriginWindow::updatePropsScale()
                 }
             }
         }
-        else
-        {
-            //Update prop's position with physics
-            applyPhysics(o);
-        }
     }
 }
 
-void OriginWindow::applyPhysics(MyObject& o)
+void OriginWindow::applyPhysics()
 {
-    // Don't apply physics to transforming objects
-    if (o.isTransforming)
-        return;
-
-    // apply gravity
-    o.velocity.y += GRAVITY_STEP;
-
-    MyPoint delta;
-    delta.x = o.velocity.x;
-    delta.y = o.velocity.y;
-    delta.z = o.velocity.z;
-
-    QList<MyPoint> before;
-    for (unsigned int j=0; j<o.nPoints; j++)
+    for(int i=0; i<scene.propcount; i++)
     {
-        before.append(o.points[j].plus(o.position));
-    }
+        // Create a reference to the prop.
+        MyObject& o = scene.prop[i];
 
-    QList<MyPoint> after;
-    for (unsigned int j=0; j<o.nPoints; j++)
-    {
-        MyPoint afterTransformation;
-        afterTransformation.x = before.at(j).x + delta.x;
-        afterTransformation.y = before.at(j).y + delta.y;
-        afterTransformation.z = before.at(j).z + delta.z;
-        after.append(afterTransformation);
-    }
+        // Don't apply physics to transforming objects
+        if (o.isTransforming)
+            continue;
 
-    // Check for collision
-    if (checkCollisionWithAll(before,after))
-    {
-        o.velocity.x = -delta.x * 0.4f;
-        o.velocity.y = -delta.y * 0.4f;
-        o.velocity.z = -delta.z * 0.4f;
-    }
-    else
-    {
+        // apply gravity
+        o.velocity.y += GRAVITY_STEP;
+
+        MyPoint delta;
+        delta.x = o.velocity.x;
+        delta.y = o.velocity.y;
+        delta.z = o.velocity.z;
+
+        QList<MyPoint> before;
+        for (unsigned int j=0; j<o.nPoints; j++)
+        {
+            before.append(o.points[j].plus(o.position));
+        }
+
+        QList<MyPoint> after;
+        for (unsigned int j=0; j<o.nPoints; j++)
+        {
+            MyPoint afterTransformation;
+            afterTransformation.x = before.at(j).x + delta.x;
+            afterTransformation.y = before.at(j).y + delta.y;
+            afterTransformation.z = before.at(j).z + delta.z;
+            after.append(afterTransformation);
+        }
+
         MyPoint& curPosition = o.position;
+        // Check for collision
+        if (checkCollisionWithAll(before,after,curPosition))
+        {
+            o.velocity.x = -delta.x * 0.4f;
+            o.velocity.y = -delta.y * 0.4f;
+            o.velocity.z = -delta.z * 0.4f;
+        }
+        else
+        {
 
-        // Adjust position based on velocity
-        curPosition.x += o.velocity.x;
-        curPosition.y += o.velocity.y;
-        curPosition.z += o.velocity.z;
+            // Adjust position based on velocity
+            curPosition.x += o.velocity.x;
+            curPosition.y += o.velocity.y;
+            curPosition.z += o.velocity.z;
 
-        // reduce objects velocity (friction)
-        o.velocity.times(0.8f);
+            o.goalPosition = o.position;
+
+            // reduce objects velocity (friction)
+            o.velocity.times(0.8f);
+        }
     }
 }
 
@@ -341,10 +385,6 @@ void OriginWindow::updateIsTransforming()
     {
         // Create a reference to the prop.
         MyObject& o = scene.prop[i];
-
-        // Don't worry about non-transforming objects
-        if (!o.isTransforming)
-            continue;
 
         // The object is transforming if it is not at it's goal
         o.isTransforming = !(o.goalPosition.equals(o.position) && o.goalRotation.equals(o.rotation) && o.goalScale.equals(o.scale));

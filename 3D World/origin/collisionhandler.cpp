@@ -1,6 +1,6 @@
 #include "originwindow.h"
 
-bool OriginWindow::checkCollisionWithAll(QList<MyPoint> before, QList<MyPoint> after)
+bool OriginWindow::checkCollisionWithAll(QList<MyPoint> before, QList<MyPoint> after, MyPoint objPos)
 {
     // Assume the same number of points before and after the move
     int numPoints = before.size();
@@ -15,6 +15,9 @@ bool OriginWindow::checkCollisionWithAll(QList<MyPoint> before, QList<MyPoint> a
         for(int j=0; j<scene.propcount; j++)
         {
             MyObject& prop = scene.prop[j];
+            //Don't collide with self
+            if (prop.position.equals(objPos))
+                continue;
 
             // Check for collisions with each triangular plane of the prop.
             for(unsigned int k=0; k<prop.nPlanes; k++)
@@ -36,6 +39,7 @@ bool OriginWindow::checkCollisionWithAll(QList<MyPoint> before, QList<MyPoint> a
                 // Check that the intersection point is within the triangular plane:
                 if(lineTriangleCollision(p1, p2, p3, linePoint0, linePoint1, intersectionPoint))
                 {
+                    printf("collision with prop at (%f,%f,%f)\n",propPos.x,propPos.y,propPos.z);
                     return true;
                 }
             }
@@ -46,6 +50,9 @@ bool OriginWindow::checkCollisionWithAll(QList<MyPoint> before, QList<MyPoint> a
         {
             // Get the Object.
             MyObject& sceneObject = scene.obj[j];
+            //Don't collide with self
+            if (sceneObject.position.equals(objPos))
+                continue;
 
             // Check for collisions with each triangular plane of the object.
             for(unsigned int k=0; k<sceneObject.nPlanes; k++)
@@ -67,6 +74,7 @@ bool OriginWindow::checkCollisionWithAll(QList<MyPoint> before, QList<MyPoint> a
                 // Check that the intersection point is within the boundaries of the triangular plane:
                 if(lineTriangleCollision(p1, p2, p3, linePoint0, linePoint1, intersectionPoint))
                 {
+                    //printf("collision with object at (%f,%f,%f)\n",objectPos.x,objectPos.y,objectPos.z);
                     return true;
                 }
             }
